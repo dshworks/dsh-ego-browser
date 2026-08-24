@@ -13,11 +13,12 @@
 </div>
 
 <p align="center"><strong>
-7 个工具 · 用 ego lite 自己的 <code>learnings/</code> 格式存 · 在 dsh 0.1.1-rc.2 上验证过 · 72 个测试，不需要浏览器 · 纯 host 插件 · MIT
+7 个工具 · 用 ego lite 自己的 <code>learnings/</code> 格式存 · 在 dsh 0.1.1-rc.2 上验证过 · 74 个测试，不需要浏览器 · 纯 host 插件 · MIT
 </strong></p>
 
 <p align="center">
 <a href="https://github.com/dshworks/dsh-ego-browser/actions/workflows/ci.yml"><img src="https://github.com/dshworks/dsh-ego-browser/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+<a href="https://www.npmjs.com/package/@dshworks/dsh-ego-browser"><img src="https://img.shields.io/npm/v/@dshworks/dsh-ego-browser?color=CB3837&logo=npm&logoColor=white" alt="npm"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-3DA639" alt="MIT"></a>
 <img src="https://img.shields.io/badge/node-%E2%89%A520-5FA04E" alt="Node >= 20">
 <img src="https://img.shields.io/badge/dsh-0.1.1--rc.2%20verified-1E90FF" alt="verified against dsh 0.1.1-rc.2">
@@ -92,8 +93,8 @@ ego lite 是一个人和 agent 共用的浏览器：agent 在自己的 Space 里
 需要运行 dsh 的机器上已安装并完成 ego lite 引导（[lite.ego.app](https://lite.ego.app/)），使 `ego-browser` 在 PATH 上。
 
 ```sh
-# 1. 安装 —— 构建产物已入库，不需要再构建
-dsh plugin --profile web add -w github:dshworks/dsh-ego-browser
+# 1. 安装
+dsh plugin --profile web add -w @dshworks/dsh-ego-browser
 
 # 2. 重启 dsh
 
@@ -116,11 +117,11 @@ store: ~/.dsh/ego-browser/workspace (3 sites)
 
 ## 凭据
 
-**在真实 dsh 上跑过**（0.1.1-rc.2，把插件 link 进 profile 后启动）：
+**在真实 dsh 上跑过**（0.1.1-rc.2，从 npm 装进 profile 后启动）：
 
 | 声称 | 怎么验的 |
 |---|---|
-| 七个工具全部注册 | `GET /dsh-ego-browser/memory` 会列出它们；tools 服务没到位时是 `[]` |
+| 发布出去的包装得上、加载得了 | `dsh plugin add -w @dshworks/dsh-ego-browser`，重启后七个工具全部注册 —— `GET /dsh-ego-browser/memory` 会列出它们；tools 服务没到位时是 `[]` |
 | store 会自动继承 | 启动后带着 `github`（3 个工具）、`google`（2 个）、`x-com`（3 个），来自 `~/.claude/skills/ego-browser/learnings/` |
 | 我们的校验器与 ego 的格式一致 | 对 ego 自带站点报出**零问题** —— 这个方向的检查才有意义 |
 | 路由有围栏 | loopback 返回 200，`Host` 指向别处返回 **403** |
@@ -136,7 +137,7 @@ store: ~/.dsh/ego-browser/workspace (3 sites)
 | 晋升闸拦得住 | 快照 ref、错误 schema、缺失导出、无法解析的源码全部拒收，且不写入任何字节 |
 
 ```sh
-npm install && npm test    # 72 个测试，不需要浏览器，约 2 秒
+npm install && npm test    # 74 个测试，不需要浏览器，约 2 秒
 ```
 
 `fixtures/` 里的 CLI 替身是从 ego 自己的源码逐条转写的 —— argv 处理来自 `src/run.ts`，输出 sink 来自 `src/output-sink.ts`，helper 表面来自 `src/helpers.ts` —— 每个文件头都写明了它跟的是上游哪个文件，因为比生产环境更弱的替身什么都测不出来。

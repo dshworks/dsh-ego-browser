@@ -113,6 +113,27 @@ describe('the test count in the docs', () => {
   })
 })
 
+describe('the install command', () => {
+  it('names the package this repo actually publishes', () => {
+    const { name } = JSON.parse(read('package.json'))
+    const commands = [
+      ...[...README.matchAll(/dsh plugin --profile \w+ add -w (\S+)/g)].map(match => match[1]),
+      ...[...README_ZH.matchAll(/dsh plugin --profile \w+ add -w (\S+)/g)].map(match => match[1]),
+      ...[...LLMS.matchAll(/dsh plugin --profile \w+ add -w (\S+)/g)].map(match => match[1]),
+    ]
+    expect(commands.length, 'all three surfaces should show the install command').toBeGreaterThanOrEqual(3)
+    expect(commands.filter(command => command !== name)).toEqual([])
+  })
+
+  it('advertises the npm badge for the same package', () => {
+    const { name } = JSON.parse(read('package.json'))
+    for (const [label, source] of [['README', README], ['README.zh', README_ZH]]) {
+      expect(source, `${label} should badge the published package`).toContain(`https://img.shields.io/npm/v/${name}`)
+      expect(source, `${label} should link the npm page`).toContain(`https://www.npmjs.com/package/${name}`)
+    }
+  })
+})
+
 describe('the dsh version on the front page', () => {
   it('is the same version in the badge, the value line, and the proof table', () => {
     const claimed = [...README.matchAll(/0\.1\.1-{1,2}rc\.2/g)].length
