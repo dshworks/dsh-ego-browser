@@ -4,7 +4,7 @@
 
 ```sh
 npm install
-npm test        # 72 tests, no browser needed, ~2s
+npm test        # 74 tests, no browser needed, ~2s
 ```
 
 The suite spawns real Node processes through a subprocess double that matches

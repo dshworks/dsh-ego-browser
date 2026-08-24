@@ -7,20 +7,21 @@
 > Continue/Finish prompt when a page needs a human. 7 tools, host-only, MIT,
 > verified against dsh 0.1.1-rc.2.
 
-Package: `@dshworks/dsh-ego-browser` — **not yet published to npm**; install
-from GitHub (see below). Host-only dsh plugin; requires the ego lite app
-(macOS today) so that `ego-browser` is on the PATH. Not affiliated with DeepSeek
-or CitroLabs.
+Package: `@dshworks/dsh-ego-browser` on npm (public, MIT). Host-only dsh plugin;
+requires the ego lite app (macOS today) so that `ego-browser` is on the PATH.
+Not affiliated with DeepSeek or CitroLabs.
 
 ## Install (copy-paste-runnable)
 
 ```sh
-# the built files are committed, so there is nothing to build
-dsh plugin --profile web add -w github:dshworks/dsh-ego-browser
+dsh plugin --profile web add -w @dshworks/dsh-ego-browser
 
 # restart dsh, then confirm the plugin loaded — seven names, or [] if it did not
 curl -s localhost:8090/dsh-ego-browser/memory | jq .tools
 ```
+
+Installing straight from the repo also works (`github:dshworks/dsh-ego-browser`);
+the built files are committed, so there is nothing to build either way.
 
 `add` registers the bundle row in the profile roster. `subprocess` is the only
 required service; `tools` and `webServer` are optional, so a headless profile

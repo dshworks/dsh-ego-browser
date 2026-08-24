@@ -2,7 +2,7 @@
 
 ## 0.1.0 — 2026-08-24
 
-First release.
+First release. On npm as `@dshworks/dsh-ego-browser`, MIT.
 
 - `ego_run`, `ego_recall`, `ego_site_run`, `ego_learn`, `ego_forget`,
   `ego_handoff`, `ego_doctor`.
@@ -25,7 +25,7 @@ First release.
   arrives would otherwise register nothing and say nothing — and dsh's plugin
   logger does not reach the web app's stdout.
 
-Verified on dsh 0.1.1-rc.2: the plugin loads, all seven
-tools register, the store seeds itself from the installed ego skill (github,
-google, x-com), and the validator finds zero problems in ego's own shipped
-learnings.
+Verified on dsh 0.1.1-rc.2 against the published package — installed with
+`dsh plugin add -w @dshworks/dsh-ego-browser`, booted, all seven tools register,
+the store seeds itself from the installed ego skill (github, google, x-com), and
+the validator finds zero problems in ego's own shipped learnings.

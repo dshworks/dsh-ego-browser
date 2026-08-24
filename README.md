@@ -13,11 +13,12 @@
 </div>
 
 <p align="center"><strong>
-7 tools · a store in ego lite's own <code>learnings/</code> format · verified on dsh 0.1.1-rc.2 · 72 tests, no browser needed · host-only · MIT
+7 tools · a store in ego lite's own <code>learnings/</code> format · verified on dsh 0.1.1-rc.2 · 74 tests, no browser needed · host-only · MIT
 </strong></p>
 
 <p align="center">
 <a href="https://github.com/dshworks/dsh-ego-browser/actions/workflows/ci.yml"><img src="https://github.com/dshworks/dsh-ego-browser/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+<a href="https://www.npmjs.com/package/@dshworks/dsh-ego-browser"><img src="https://img.shields.io/npm/v/@dshworks/dsh-ego-browser?color=CB3837&logo=npm&logoColor=white" alt="npm"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-3DA639" alt="MIT"></a>
 <img src="https://img.shields.io/badge/node-%E2%89%A520-5FA04E" alt="Node >= 20">
 <img src="https://img.shields.io/badge/dsh-0.1.1--rc.2%20verified-1E90FF" alt="verified against dsh 0.1.1-rc.2">
@@ -117,8 +118,8 @@ Needs ego lite installed and onboarded on the machine running dsh
 ([lite.ego.app](https://lite.ego.app/)), so `ego-browser` is on the PATH.
 
 ```sh
-# 1. install — the built files are committed, so there is nothing to build
-dsh plugin --profile web add -w github:dshworks/dsh-ego-browser
+# 1. install
+dsh plugin --profile web add -w @dshworks/dsh-ego-browser
 
 # 2. restart dsh
 
@@ -144,11 +145,11 @@ store inheriting what ego already shipped.*
 
 ## Proof
 
-**On a real dsh boot** (0.1.1-rc.2, plugin linked into a profile, booted):
+**On a real dsh boot** (0.1.1-rc.2, installed from npm into a profile, booted):
 
 | Claim | How it was checked |
 |---|---|
-| All seven tools register | `GET /dsh-ego-browser/memory` lists them; `[]` when the tools service never arrived |
+| The published package installs and loads | `dsh plugin add -w @dshworks/dsh-ego-browser`, restart, and all seven tools register — `GET /dsh-ego-browser/memory` lists them; `[]` when the tools service never arrived |
 | The store self-seeds | came up holding `github` (3 tools), `google` (2), `x-com` (3) from `~/.claude/skills/ego-browser/learnings/` |
 | Our validator agrees with ego's format | **zero problems** reported against ego's own shipped sites — the useful direction of that check |
 | The route is fenced | 200 on loopback, **403** for a `Host` header naming anywhere else |
@@ -164,7 +165,7 @@ store inheriting what ego already shipped.*
 | The promotion gate holds | snapshot refs, bad schemas, missing exports, and unparseable source are all refused, writing nothing |
 
 ```sh
-npm install && npm test    # 72 tests, no browser needed, ~2s
+npm install && npm test    # 74 tests, no browser needed, ~2s
 ```
 
 The CLI fixtures in `fixtures/` are transcribed from ego's own source — argv
