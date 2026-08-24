@@ -1,0 +1,53 @@
+name: Bug report
+description: Something behaves differently from what the README claims.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Everything below the `ego-browser` wire is unverified by the maintainers —
+        ego lite is macOS-only and this plugin was built in a Linux container. So
+        `ego_doctor` output is not boilerplate here; it is usually the answer.
+
+  - type: textarea
+    id: doctor
+    attributes:
+      label: ego_doctor output
+      description: Ask the agent to run `ego_doctor` and paste the whole thing. Redact the store paths if they embarrass you.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected, and what happened
+      description: One sentence each is plenty.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: The tool call that did it
+      description: The tool name and arguments, or the script you passed to `ego_run`.
+      render: javascript
+    validations:
+      required: true
+
+  - type: input
+    id: dsh
+    attributes:
+      label: dsh version
+      description: "`dsh --version`"
+      placeholder: 0.1.1-rc.2
+    validations:
+      required: true
+
+  - type: input
+    id: ego
+    attributes:
+      label: ego lite version
+      description: The app version, or how you installed it.
+    validations:
+      required: false

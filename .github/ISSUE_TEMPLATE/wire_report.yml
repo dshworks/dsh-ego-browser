@@ -1,0 +1,44 @@
+name: Wire report — what your real ego install says
+description: You have ego lite on a Mac. Tell us what it actually does. This is the most useful thing you can send.
+title: "wire report: "
+labels: [wire-report]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The README makes three claims about the `ego-browser` wire — the argv
+        shape, the helper surface, and what a hard stop does to your output.
+        They were verified against the built bundle from `citrolabs/ego-lite@main`,
+        not against a shipping macOS install. If yours disagrees, the README is
+        wrong and we want to fix it.
+
+        Nothing here is a complaint. A report saying "matches exactly" is just
+        as useful as one saying "no, mine does X".
+
+  - type: textarea
+    id: doctor
+    attributes:
+      label: ego_doctor output
+      render: text
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Which helper surface did it report?
+      options:
+        - flat globals (cliLog / snapshotText / useOrCreateTaskSpace)
+        - facades (console.log / page / browser / taskSpaces)
+        - both
+        - unknown — it recognised neither
+    validations:
+      required: true
+
+  - type: textarea
+    id: disagreement
+    attributes:
+      label: Anything the README gets wrong
+      description: Especially argv handling, helper names, or what happens to your output when you take a task space back in the ego UI.
+    validations:
+      required: false

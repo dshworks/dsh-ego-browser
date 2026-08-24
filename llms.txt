@@ -1,55 +1,98 @@
 # dsh-ego-browser
 
-> ego lite browser automation for DeepSeek Harness, with a persistent site-skill
-> memory: the agent recalls what it learned about a site before acting, promotes
-> a script that worked into a reusable tool in ego's own learnings format, and
-> hands the keyboard to the user through a real dsh Continue/Finish prompt when a
-> page needs a human.
+> ego lite browser automation for DeepSeek Harness (dsh) with a persistent
+> site-skill memory: the agent recalls what it learned about a site before
+> acting, promotes a script that worked into a reusable tool in ego lite's own
+> `learnings/` format, and hands the keyboard to the user through a real dsh
+> Continue/Finish prompt when a page needs a human. 7 tools, host-only, MIT,
+> verified against dsh 0.1.1-rc.2.
 
-Package: `@dshworks/dsh-ego-browser` (MIT). Host-only dsh plugin; requires the
-ego lite app (macOS) so that `ego-browser` is on the PATH. Not affiliated with
-DeepSeek or CitroLabs.
+Package: `@dshworks/dsh-ego-browser` — **not yet published to npm**; install
+from GitHub (see below). Host-only dsh plugin; requires the ego lite app
+(macOS today) so that `ego-browser` is on the PATH. Not affiliated with DeepSeek
+or CitroLabs.
+
+## Install (copy-paste-runnable)
+
+```sh
+# the built files are committed, so there is nothing to build
+dsh plugin --profile web add -w github:dshworks/dsh-ego-browser
+
+# restart dsh, then confirm the plugin loaded — seven names, or [] if it did not
+curl -s localhost:8090/dsh-ego-browser/memory | jq .tools
+```
+
+`add` registers the bundle row in the profile roster. `subprocess` is the only
+required service; `tools` and `webServer` are optional, so a headless profile
+loads cleanly and simply has no route.
 
 ## Tools
 
 - `ego_run(script, url?, taskSpace?, timeoutSeconds?)` — run one JavaScript
-  script in ego's runtime. `url` prepends the learned context for that site.
-- `ego_recall(url)` — learned notes and tool signatures for a URL, read off disk.
-- `ego_site_run(site, tool, kind?, args?)` — call a learned tool; counts the call.
+  script in ego's runtime. Write the WHOLE browser task as one script; the
+  runtime exits between calls and keeps no variables. `url` prepends the learned
+  notes and tool signatures for that site at no browser cost. `taskSpace` opens
+  the space first, in whichever dialect the installed runtime speaks.
+- `ego_recall(url)` — learned notes and tool signatures for a URL or bare
+  hostname, read off disk. No browser, no page load.
+- `ego_site_run(site, tool, kind?, args?)` — call a learned tool by site id and
+  name; records the call in the usage ledger.
 - `ego_learn(site, domains, tool, description, code, callable?, kind?, args?, returns, name?, note?)`
-  — promote a working step into a stored site tool.
-- `ego_forget(site, tool?)` — remove a tool or a whole site.
+  — promote a working step into a stored site tool. Refuses snapshot refs
+  (`@21`, `ref=21`), bad manifest shapes, missing exports, and source that does
+  not parse; writes nothing when refused.
+- `ego_forget(site, tool?)` — remove a tool, or a whole site.
 - `ego_handoff(taskSpace, reason, instructions?)` — hand control to the user with
-  Continue / Finish task, then take it back on Continue.
+  a real Continue / Finish task prompt, then take it back on Continue. Reports
+  plainly instead of blocking when nobody can be asked (headless, no question
+  UI, or the caller is a subagent).
 - `ego_doctor(refresh?)` — installed command, argv shape, helper surface, store
-  contents, and an API guide written for the surface actually present.
+  contents, and an API guide written for the surface actually present. Call this
+  once before the first `ego_run` of a session.
 
 ## Route
 
-- `GET /dsh-ego-browser/memory` — the store as JSON. Loopback plus configured
-  `trustedHosts` only.
+- `GET /dsh-ego-browser/memory` — JSON: `workspace`, `tools` (the registered
+  names, so an empty array means the tools service never arrived), `sites`, and
+  `problems` from the store validator. Loopback plus configured `trustedHosts`
+  only; a `Host` header naming anywhere else gets 403.
 
 ## Store layout
 
 `<workspace>/learnings/<site-id>/` with `manifest.json`, `notes/*.md`,
-`tools/*.js` (node, `export async function f(ctx, args)`), and
-`browser-tools/*.js` (evaluated in the page). This is ego lite's own format, so
-the store also loads in the stock ego-browser skill outside dsh.
+`tools/*.js` (node tool, `export async function f(ctx, args)`), and
+`browser-tools/*.js` (evaluated in the page). Default workspace
+`~/.dsh/ego-browser/workspace`. This is ego lite's own format, so the store also
+loads in the stock ego-browser skill outside dsh — there is nothing to migrate
+out of. On first boot the store seeds itself once from an existing ego skill
+workspace's `learnings/` when it finds one.
 
 ## Facts worth knowing about the ego wire
 
+Verified against the built `ego-browser` bundle from `citrolabs/ego-lite@main`
+on 2026-08-24.
+
 - The argv shape is not stable: the shipped skill documents
-  `ego-browser nodejs <<'EOF'`, while the CLI at citrolabs/ego-lite@main takes no
-  argv and exits 2 on a stray `nodejs`. The plugin probes and caches.
-- The helper surface is not stable: one generation has flat globals (`cliLog`,
-  `snapshotText`, `useOrCreateTaskSpace`), the other has facades (`console.log`,
-  `page`, `browser`, `taskSpaces`, `site`). The plugin probes and tells the model.
-- On a hard stop (the user takes the task space back) ego discards every line the
-  script logged, so a result sentinel never arrives. The plugin reads that
-  absence as a takeover, not as a parse failure.
+  `ego-browser nodejs <<'EOF'`, while the CLI at main takes no argv and exits 2
+  on a stray `nodejs`; the community Linux port swallows it as a no-op prefix.
+  The plugin probes both shapes and caches the one that runs a script.
+- The helper surface is not stable: one generation installs flat globals
+  (`cliLog`, `snapshotText`, `useOrCreateTaskSpace`), the other installs facades
+  (`console.log`, `page`, `browser`, `taskSpaces`, `site`, `fetch`, `cdp`) and
+  drops `cliLog`. A script written for one throws ReferenceError on the other.
+  The plugin probes the runtime and hands the answer to the model.
+- On a hard stop — the user takes the task space back — ego marks the run and
+  DISCARDS every line the script logged, printing only its own guidance. A
+  result sentinel never arrives, so its absence is the signal; the plugin
+  classifies the run as a takeover rather than a parse failure.
+- Stored tools and notes may not contain snapshot refs (`@21`, `ref=21`): they
+  are rebuilt on every `snapshotText()` call. ego's own validator rejects them,
+  and this plugin refuses to store them.
 
 ## Links
 
 - Repository: https://github.com/dshworks/dsh-ego-browser
+- README: https://github.com/dshworks/dsh-ego-browser#readme (中文: README.zh.md)
+- Issues: https://github.com/dshworks/dsh-ego-browser/issues
 - ego lite: https://github.com/citrolabs/ego-lite
 - dsh plugin registry: https://dsh.works
