@@ -1,0 +1,55 @@
+# dsh-ego-browser
+
+> ego lite browser automation for DeepSeek Harness, with a persistent site-skill
+> memory: the agent recalls what it learned about a site before acting, promotes
+> a script that worked into a reusable tool in ego's own learnings format, and
+> hands the keyboard to the user through a real dsh Continue/Finish prompt when a
+> page needs a human.
+
+Package: `@dshworks/dsh-ego-browser` (MIT). Host-only dsh plugin; requires the
+ego lite app (macOS) so that `ego-browser` is on the PATH. Not affiliated with
+DeepSeek or CitroLabs.
+
+## Tools
+
+- `ego_run(script, url?, taskSpace?, timeoutSeconds?)` — run one JavaScript
+  script in ego's runtime. `url` prepends the learned context for that site.
+- `ego_recall(url)` — learned notes and tool signatures for a URL, read off disk.
+- `ego_site_run(site, tool, kind?, args?)` — call a learned tool; counts the call.
+- `ego_learn(site, domains, tool, description, code, callable?, kind?, args?, returns, name?, note?)`
+  — promote a working step into a stored site tool.
+- `ego_forget(site, tool?)` — remove a tool or a whole site.
+- `ego_handoff(taskSpace, reason, instructions?)` — hand control to the user with
+  Continue / Finish task, then take it back on Continue.
+- `ego_doctor(refresh?)` — installed command, argv shape, helper surface, store
+  contents, and an API guide written for the surface actually present.
+
+## Route
+
+- `GET /dsh-ego-browser/memory` — the store as JSON. Loopback plus configured
+  `trustedHosts` only.
+
+## Store layout
+
+`<workspace>/learnings/<site-id>/` with `manifest.json`, `notes/*.md`,
+`tools/*.js` (node, `export async function f(ctx, args)`), and
+`browser-tools/*.js` (evaluated in the page). This is ego lite's own format, so
+the store also loads in the stock ego-browser skill outside dsh.
+
+## Facts worth knowing about the ego wire
+
+- The argv shape is not stable: the shipped skill documents
+  `ego-browser nodejs <<'EOF'`, while the CLI at citrolabs/ego-lite@main takes no
+  argv and exits 2 on a stray `nodejs`. The plugin probes and caches.
+- The helper surface is not stable: one generation has flat globals (`cliLog`,
+  `snapshotText`, `useOrCreateTaskSpace`), the other has facades (`console.log`,
+  `page`, `browser`, `taskSpaces`, `site`). The plugin probes and tells the model.
+- On a hard stop (the user takes the task space back) ego discards every line the
+  script logged, so a result sentinel never arrives. The plugin reads that
+  absence as a takeover, not as a parse failure.
+
+## Links
+
+- Repository: https://github.com/dshworks/dsh-ego-browser
+- ego lite: https://github.com/citrolabs/ego-lite
+- dsh plugin registry: https://dsh.works

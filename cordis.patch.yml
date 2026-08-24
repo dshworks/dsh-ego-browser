@@ -1,0 +1,15 @@
+# dsh-ego-browser bundle patch: mount the plugin as one composition row.
+#
+# `name` is the import specifier the Loader resolves, so it carries the full
+# package name; `id` is the composition row's handle and stays short — it is what
+# a profile's own cordis.patch.yml targets to configure this plugin.
+#
+# The host half needs `subprocess`, which is the single wire to the `ego-browser`
+# command and present in every profile that can run a shell tool. `tools` and
+# `webServer` are picked up through `ctx.inject(...)` when they exist, so a
+# headless profile loads this plugin cleanly and simply has no memory route.
+# There is no browser half: the store is agent-facing, and the one route serves
+# JSON.
+- insert:
+    - id: dsh-ego-browser
+      name: '@dshworks/dsh-ego-browser'
