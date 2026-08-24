@@ -33,8 +33,16 @@ Needs ego lite installed and onboarded on the machine running dsh
 ([lite.ego.app](https://lite.ego.app/)), so `ego-browser` is on the PATH.
 
 ```sh
-dsh plugin --profile web add -w @dshworks/dsh-ego-browser
+# straight from GitHub — the built files are committed, so there is nothing to build
+dsh plugin --profile web add -w github:dshworks/dsh-ego-browser
+
 # restart dsh, then ask the agent to run ego_doctor
+```
+
+`add` registers the bundle in the profile roster for you. Check it took:
+
+```sh
+curl -s localhost:8090/dsh-ego-browser/memory | jq .tools   # seven names, or [] if it did not
 ```
 
 `ego_doctor` is the first call worth making. It reports which ego is installed,

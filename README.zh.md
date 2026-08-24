@@ -24,8 +24,16 @@ ego_handoff    页面需要真人时，真的去问用户，然后再把控制�
 需要运行 dsh 的机器上已安装并完成 ego lite 引导（[lite.ego.app](https://lite.ego.app/)），使 `ego-browser` 在 PATH 上。
 
 ```sh
-dsh plugin --profile web add -w @dshworks/dsh-ego-browser
+# 直接从 GitHub 装 —— 构建产物已入库，不需要再构建
+dsh plugin --profile web add -w github:dshworks/dsh-ego-browser
+
 # 重启 dsh，然后让 agent 先跑一次 ego_doctor
+```
+
+`add` 会顺手把 bundle 登记进 profile 花名册。确认装上了：
+
+```sh
+curl -s localhost:8090/dsh-ego-browser/memory | jq .tools   # 七个名字；如果是 [] 就是没装上
 ```
 
 `ego_doctor` 是最值得先调的一个：它报告装的是哪一代 ego、该怎么调用、有哪些 helper 名字、store 在哪里。
