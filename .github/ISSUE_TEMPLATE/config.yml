@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: ego lite itself
+    url: https://github.com/citrolabs/ego-lite/issues
+    about: The browser, the ego-browser command, task spaces, and Spaces are CitroLabs' — report those upstream.
+  - name: DeepSeek Harness
+    url: https://github.com/deepseek-ai/deepseek-harness
+    about: Profiles, the plugin loader, and the tools service are dsh's.
