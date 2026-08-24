@@ -201,7 +201,20 @@ when present, so a headless profile loads cleanly and simply has no route.
 
 Honest, because a browser plugin that overclaims is worse than none.
 
-**Verified here**, against the genuine built `ego-browser` bundle and a real
+**Verified on a real dsh boot** (0.1.1-rc.2, `dsh --profile <p>` with the plugin
+linked in):
+
+- all seven tools register — the memory route reports them, which is also how
+  you check it from outside: `curl -s localhost:8090/dsh-ego-browser/memory | jq .tools`
+- the store seeded itself from the installed ego skill's own `learnings/` and
+  came up holding `github` (3 tools), `google` (2), and `x-com` (3)
+- the validator reports **zero problems** against those shipped sites, which is
+  the useful direction of that check: our rules agree with ego's format on ego's
+  own files
+- the route answers loopback and returns 403 for a Host header naming anywhere
+  else
+
+**Verified against the genuine built `ego-browser` bundle** and a real
 subprocess seam (66 tests, `npm test`):
 
 - the argv probe picks the shape that works, on both generations, and reports
@@ -217,12 +230,12 @@ subprocess seam (66 tests, `npm test`):
   that does not parse — writing nothing in every case
 - the memory route answers loopback and refuses a rebound host or cross-site read
 
-**Not verified here.** Every path that needs the live browser — an actual page
-load, a real task space, a real user takeover — because ego lite is a macOS app
-and this was built in a Linux container. The wire into it is exercised end to
-end; what is on the far side of that wire is not. Run `ego_doctor` first on a
-real install, and open an issue with its output if anything below the wire
-disagrees with what is written here.
+**Not verified.** Every path that needs the live browser — an actual page load,
+a real task space, a real user takeover — because ego lite is a macOS app and
+this was built in a Linux container. The wire into it is exercised end to end
+against the real CLI bundle; what is on the far side of that wire is not. Run
+`ego_doctor` first on a real install, and open an issue with its output if
+anything below the wire disagrees with what is written here.
 
 ---
 

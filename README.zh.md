@@ -149,7 +149,15 @@ dsh 支持。`ego_handoff` 交出任务空间，弹出一个带这两个选项�
 
 说实话，因为一个吹过头的浏览器插件比没有更糟。
 
-**在这里验证过**（对着真实构建出的 `ego-browser` bundle 和真实 subprocess 接缝，66 个测试，`npm test`）：
+**在真实 dsh 上验证过**（0.1.1-rc.2，把插件 link 进 profile 后 `dsh --profile <p>` 启动）：
+
+- 七个工具全部注册成功 —— memory 路由会把它们列出来，这也是你从外面自查的办法：
+  `curl -s localhost:8090/dsh-ego-browser/memory | jq .tools`
+- store 自动从已安装的 ego skill 的 `learnings/` 继承，启动后带着 `github`（3 个工具）、`google`（2 个）、`x-com`（3 个）
+- 校验器对这些 ego 自带站点报出 **零问题** —— 这个方向才有意义：我们的规则在 ego 自己的文件上与 ego 的格式一致
+- 路由接受 loopback，Host 指向别处时返回 403
+
+**对着真实构建出的 `ego-browser` bundle 和真实 subprocess 接缝验证过**（66 个测试，`npm test`）：
 
 - argv 探针在两代上都能选中可用形状，两种都失败时把两次的输出都报出来
 - 表面探针对着真实 bundle 返回 `facade` 与 `page, browser, taskSpaces, site, fetch, cdp, help` —— 与其源码完全一致
@@ -160,7 +168,7 @@ dsh 支持。`ego_handoff` 交出任务空间，弹出一个带这两个选项�
 - `ego_learn` 拒收快照 ref、错误 schema、缺失导出、无法解析的源码 —— 每一种都不写入任何字节
 - memory 路由接受 loopback，拒绝被重绑定的 Host 和跨站读
 
-**没在这里验证的**：所有需要真实浏览器的路径 —— 真的加载页面、真的任务空间、真的用户接管 —— 因为 ego lite 是 macOS 应用，而这份代码写在 Linux 容器里。通向它的那根线是端到端跑过的；线那头的东西没有。请先在真机上跑 `ego_doctor`，若与本文所写不符，请带上它的输出开 issue。
+**没有验证的**：所有需要真实浏览器的路径 —— 真的加载页面、真的任务空间、真的用户接管 —— 因为 ego lite 是 macOS 应用，而这份代码写在 Linux 容器里。通向它的那根线对着真实 CLI bundle 端到端跑过；线那头的东西没有。请先在真机上跑 `ego_doctor`，若与本文所写不符，请带上它的输出开 issue。
 
 ---
 

@@ -20,4 +20,12 @@ First release.
   as a parse failure.
 - `ego_handoff` raises a real dsh question with Continue / Finish task, which is
   what ego's own hard-stop message asks the harness to do.
-- `GET /dsh-ego-browser/memory`, behind a loopback-and-declared-hosts fence.
+- `GET /dsh-ego-browser/memory`, behind a loopback-and-declared-hosts fence. It
+  reports the registered tool names too, because a `tools` service that never
+  arrives would otherwise register nothing and say nothing — and dsh's plugin
+  logger does not reach the web app's stdout.
+
+Verified on dsh 0.1.1-rc.2: the plugin loads, all seven
+tools register, the store seeds itself from the installed ego skill (github,
+google, x-com), and the validator finds zero problems in ego's own shipped
+learnings.

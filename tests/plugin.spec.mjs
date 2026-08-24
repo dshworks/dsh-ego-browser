@@ -70,10 +70,14 @@ describe('loading', () => {
     })
   })
 
-  it('loads without the tools service, and simply has no tools', async () => {
+  it('loads without the tools service, and says so on the route', async () => {
     await withTempDir(async (dir) => {
       const ctx = load(dir, { services: { tools: false } })
       expect(ctx.routes).toHaveLength(1)
+      let body = ''
+      const res = { writeHead() { return res }, end(text) { body = text ?? '' } }
+      await ctx.routes[0].handler({ method: 'GET', headers: { host: '127.0.0.1' } }, res)
+      expect(JSON.parse(body).tools).toEqual([])
     })
   })
 
@@ -317,6 +321,8 @@ describe('the memory route', () => {
       const parsed = JSON.parse(body)
       expect(parsed.sites[0].id).toBe('example')
       expect(parsed.problems).toEqual([])
+      // The route is also the answer to "did the tools service ever arrive".
+      expect(parsed.tools).toHaveLength(7)
     })
   })
 
