@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dsh-ego-browser &mdash; a browser memory your dsh agent writes</title>
+<meta name="description" content="ego lite brings your real logins to a dsh agent. dsh-ego-browser adds the half ego's own README still lists as coming soon: a site-skill store the agent writes, so the second time it scrapes that dashboard it calls a tool it wrote last week. Seven tools, host-only, MIT. Not affiliated with DeepSeek.">
+<meta name="keywords" content="dsh plugin, deepseek harness, ego lite, ego browser, browser agent, site skills, agent memory, browser automation, learnings">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="canonical" href="https://dsh.works/dsh-ego-browser/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="dsh.works">
+<meta property="og:title" content="dsh-ego-browser &mdash; a browser memory your dsh agent writes">
+<meta property="og:description" content="The second time the agent scrapes that dashboard, it calls a tool it wrote last week instead of rediscovering the page. Seven tools, in ego lite's own learnings format.">
+<meta property="og:url" content="https://dsh.works/dsh-ego-browser/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="dsh-ego-browser &mdash; a browser memory your dsh agent writes">
+<meta name="twitter:description" content="Recall, run, learn, run what it learned. Seven tools, not thirty &mdash; on ego's own benchmark.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=&apos;http://www.w3.org/2000/svg&apos; viewBox=&apos;0 0 64 64&apos;%3E%3Crect width=&apos;64&apos; height=&apos;64&apos; rx=&apos;4&apos; fill=&apos;%23000&apos;/%3E%3Ctext x=&apos;32&apos; y=&apos;46&apos; font-family=&apos;ui-monospace,monospace&apos; font-size=&apos;38&apos; font-weight=&apos;700&apos; fill=&apos;%2300c2e9&apos; text-anchor=&apos;middle&apos;%3Eego%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap">
+<script>try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch(e){}</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication",
+ "name":"dsh-ego-browser","applicationCategory":"DeveloperApplication",
+ "operatingSystem":"macOS","license":"https://opensource.org/licenses/MIT",
+ "url":"https://dsh.works/dsh-ego-browser/",
+ "codeRepository":"https://github.com/dshworks/dsh-ego-browser",
+ "softwareVersion":"0.1.0",
+ "description":"A DeepSeek Harness (dsh) plugin that gives a browser agent a site-skill memory it writes itself, in ego lite's own learnings format: recall what worked, run one script per task, promote the step that worked into a stored tool, and call it by name next session.",
+ "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<style>
+
+/* dsh-ego-browser — the house material: black, one mono face, cyan and pink,
+ * 3px corners. Same tokens as dsh.works, dsh-meter and dsh-crew.
+ *
+ * Every colour is a custom property declared twice — the dark value alone,
+ * then the light-dark() pair. A browser without light-dark() keeps the dark
+ * value and the page still works. No colour lives anywhere else. */
+
+:root {
+  color-scheme: light dark;
+
+  --bg: #000000;
+  --bg: light-dark(#fbfaf7, #000000);
+  --surface: #0d0d0d;
+  --surface: light-dark(#f2f1ec, #0d0d0d);
+  --surface-2: #141414;
+  --surface-2: light-dark(#e8e7e0, #141414);
+  --line: #262626;
+  --line: light-dark(#d4d1c7, #262626);
+  --text: #e8e8e8;
+  --text: light-dark(#17171a, #e8e8e8);
+  --muted: #9a9a9a;
+  --muted: light-dark(#5a5a60, #9a9a9a);
+  --strong: #ffffff;
+  --strong: light-dark(#000000, #ffffff);
+
+  --cyan: #00c2e9;
+  --cyan: light-dark(#0a6e85, #00c2e9);
+  --pink: #e41478;
+  --pink: light-dark(#bd0e60, #e41478);
+  --yellow: #ffd53d;
+  --yellow: light-dark(#7a5200, #ffd53d);
+
+  --masthead-bg: rgba(0, 0, 0, 0.9);
+  --masthead-bg: light-dark(rgba(251, 250, 247, 0.9), rgba(0, 0, 0, 0.9));
+
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --measure: 68ch;
+  --dur-fast: 140ms;
+  --ease: cubic-bezier(0.25, 0, 0.2, 1);
+}
+:root[data-theme="light"] { color-scheme: only light; }
+:root[data-theme="dark"] { color-scheme: only dark; }
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; animation: none !important; }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.6 var(--mono);
+  font-variant-ligatures: none;
+}
+
+.wrap { max-width: 62rem; margin: 0 auto; padding: 0 1.5rem; }
+main .wrap > * { max-width: var(--measure); }
+main .wrap > .hero,
+main .wrap > h2,
+main .wrap > figure,
+main .wrap > .grid,
+main .wrap > .tablewrap,
+main .wrap > .counts,
+main .wrap > .loop,
+main .wrap > .store,
+main .wrap > pre,
+main .wrap > .cmd { max-width: none; }
+
+a { color: var(--cyan); text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: 3px; }
+::selection { background: var(--cyan); color: var(--bg); }
+
+h1, h2, h3 { color: var(--strong); line-height: 1.25; font-weight: 700; }
+h1 { font-size: clamp(1.5rem, 4.2vw, 2rem); letter-spacing: -0.01em; margin: 0 0 1rem; }
+h2 {
+  font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em;
+  margin: 3.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--line);
+  max-width: none;
+}
+h3 { font-size: 0.95rem; margin: 0 0 0.4rem; }
+p { margin: 0 0 1rem; }
+.caret { color: var(--cyan); }
+.lede { color: var(--muted); }
+.lede strong { color: var(--text); font-weight: 400; }
+.fine { color: var(--muted); font-size: 0.85rem; }
+
+code { background: var(--surface-2); border-radius: 3px; padding: 0 4px; font-size: 0.95em; }
+
+.skip {
+  position: absolute; left: 1.5rem; top: -3rem; z-index: 20;
+  background: var(--cyan); color: var(--bg); padding: 0.4rem 0.7rem; border-radius: 3px;
+}
+.skip:focus { top: 0.5rem; }
+
+/* ---------- masthead ---------- */
+
+.masthead {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--masthead-bg); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.masthead .wrap {
+  display: flex; align-items: center; gap: 1rem;
+  padding-top: 0.75rem; padding-bottom: 0.75rem;
+}
+.brand { color: var(--strong); font-weight: 700; white-space: nowrap; }
+.brand:hover { text-decoration: none; }
+.brand .tld { color: var(--muted); font-weight: 400; }
+.bar-end { display: flex; align-items: center; gap: 1rem; margin-left: auto; min-width: 0; }
+.sitenav { display: flex; gap: 1rem; overflow-x: auto; scrollbar-width: none; }
+.sitenav::-webkit-scrollbar { display: none; }
+.sitenav a { color: var(--muted); white-space: nowrap; }
+.sitenav a:hover { color: var(--cyan); }
+.themetoggle {
+  background: none; border: 1px solid var(--line); border-radius: 3px;
+  color: var(--muted); font: inherit; font-size: 0.8rem; padding: 0.15rem 0.5rem;
+  cursor: pointer; white-space: nowrap; transition: border-color var(--dur-fast) var(--ease);
+}
+.themetoggle:hover { border-color: var(--cyan); color: var(--cyan); }
+
+/* ---------- hero ---------- */
+
+.hero { padding: 3rem 0 0.5rem; }
+.hero h1 { max-width: 26ch; }
+.hero .lede { max-width: 60ch; margin-bottom: 1.5rem; }
+
+.cmd {
+  display: flex; align-items: center; gap: 0.6rem;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 3px;
+  padding: 0.7rem 0.9rem; margin: 0 0 0.75rem; overflow-x: auto;
+}
+.cmd code { background: none; padding: 0; white-space: nowrap; }
+.cmd .caret { flex: none; }
+.copy {
+  margin-left: auto; flex: none; background: none; border: 1px solid var(--line);
+  border-radius: 3px; color: var(--muted); font: inherit; font-size: 0.75rem;
+  padding: 0.1rem 0.45rem; cursor: pointer; transition: border-color var(--dur-fast) var(--ease);
+}
+.copy:hover { border-color: var(--cyan); color: var(--cyan); }
+
+.cta { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-top: 1rem; }
+.btn {
+  border: 1px solid var(--line); border-radius: 3px; padding: 0.35rem 0.8rem;
+  color: var(--text); transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.btn:hover { border-color: var(--cyan); color: var(--cyan); text-decoration: none; }
+.btn-primary { border-color: var(--cyan); color: var(--cyan); }
+
+/* ---------- the store, rendered ---------- */
+
+/* Same choice dsh-crew made: the demonstration is the product's own output
+ * rebuilt in the page, not a screenshot of it. It takes the reader's theme,
+ * stays legible at any width, and cannot quietly go stale. Every line below is
+ * transcribed from a real `ego_doctor` run on a real dsh 0.1.1-rc.2 boot —
+ * the three sites and eight tools are what ego itself ships, which is the
+ * point being made. */
+.store {
+  border: 1px solid var(--line); border-radius: 3px; background: var(--surface);
+  margin: 1.5rem 0 0.75rem; overflow: hidden;
+}
+.store-bar {
+  display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+  padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--line); font-size: 0.75rem;
+}
+.store-bar .label {
+  color: var(--muted); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
+}
+.chip {
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 0.1rem 0.6rem; color: var(--muted);
+}
+.chip.on { border-color: var(--cyan); color: var(--cyan); }
+.term {
+  margin: 0; padding: 0.8rem 0.9rem; font-size: 0.72rem; line-height: 1.6;
+  white-space: pre; overflow-x: auto; color: var(--text);
+}
+/* A transcript standing on its own, outside a .store figure, needs the frame
+ * the figure was giving it -- and needs to be exempt from the reading measure,
+ * because `white-space: pre` inside a 68ch column silently clips the right
+ * edge of every line instead of wrapping it. */
+pre.term {
+  border: 1px solid var(--line); border-left: 2px solid var(--pink);
+  border-radius: 3px; background: var(--surface); margin: 0 0 1rem;
+}
+.store pre.term { border: 0; border-radius: 0; background: none; margin: 0; }
+.term .you { color: var(--strong); font-weight: 700; }
+.term .mut { color: var(--muted); }
+.term .warn { color: var(--yellow); }
+.term .no  { color: var(--pink); }
+.term .ok  { color: var(--cyan); }
+
+figcaption { color: var(--muted); font-size: 0.85rem; margin: 0.5rem 0.9rem 0.9rem; max-width: var(--measure); }
+figure { margin-left: 0; margin-right: 0; }
+
+/* ---------- the loop ---------- */
+
+/* Four steps that only mean something in order, so they are numbered and they
+ * wrap into a column rather than reflowing into a grid that loses the order. */
+.loop { display: grid; gap: 0.6rem; grid-template-columns: repeat(4, 1fr); margin: 1.5rem 0 0.75rem; }
+@media (max-width: 860px) { .loop { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 460px) { .loop { grid-template-columns: 1fr; } }
+.step {
+  border: 1px solid var(--line); border-top: 2px solid var(--cyan);
+  border-radius: 3px; padding: 0.8rem; background: var(--bg); min-width: 0;
+}
+.step .n { color: var(--muted); font-size: 0.65rem; letter-spacing: 0.12em; }
+.step h3 { font-size: 0.85rem; margin: 0.2rem 0 0.4rem; }
+.step h3 code { background: none; padding: 0; color: var(--cyan); }
+.step p { color: var(--muted); font-size: 0.8rem; margin: 0; }
+
+/* ---------- grid ---------- */
+
+.grid { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; margin: 0 0 1rem; }
+@media (max-width: 680px) { .grid { grid-template-columns: 1fr; } }
+.card {
+  border: 1px solid var(--line); border-radius: 3px; padding: 1rem; background: var(--surface);
+}
+.card p:last-child { margin-bottom: 0; }
+.card .fine { margin-bottom: 0; }
+
+/* ---------- tables ---------- */
+
+.tablewrap { overflow-x: auto; margin: 0 0 1rem; }
+table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+th, td { text-align: left; padding: 0.45rem 0.8rem 0.45rem 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 400; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; }
+td code { white-space: nowrap; }
+
+/* ---------- proof ---------- */
+
+.proof { border-left: 2px solid var(--pink); padding-left: 1rem; margin: 0 0 1.5rem; }
+.proof h3 { color: var(--strong); }
+.proof p:last-child { margin-bottom: 0; }
+
+.counts { display: flex; flex-wrap: wrap; gap: 1.5rem; margin: 0 0 1.5rem; }
+.count strong { display: block; color: var(--strong); font-size: 1.3rem; line-height: 1.2; }
+.count span { color: var(--muted); font-size: 0.8rem; }
+
+/* ---------- footer ---------- */
+
+footer { border-top: 1px solid var(--line); margin-top: 4rem; padding: 1.5rem 0 3rem; }
+footer nav { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.75rem; }
+footer nav a { color: var(--muted); }
+footer nav a:hover { color: var(--cyan); }
+footer p { color: var(--muted); font-size: 0.8rem; margin: 0; max-width: var(--measure); }
+</style>
+</head>
+<body>
+<a class="skip" href="#install">Skip to install</a>
+
+<header class="masthead">
+  <div class="wrap">
+    <a class="brand" href="https://dsh.works/"><span class="caret">&gt;</span> dsh<span class="tld">.works</span></a>
+    <div class="bar-end">
+      <nav class="sitenav" aria-label="Sections">
+        <a href="#install">install</a>
+        <a href="#tools">tools</a>
+        <a href="#gate">the gate</a>
+        <a href="#proof">proof</a>
+        <a href="https://dsh.works/awesome-dsh-plugins/">registry</a>
+        <a href="https://github.com/dshworks/dsh-ego-browser">github&nbsp;&#8599;</a>
+      </nav>
+      <button class="themetoggle" id="themetoggle" type="button" aria-label="Switch colour theme">theme</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+  <section class="hero">
+    <h1>Your agent already<br>solved this page.</h1>
+    <p class="lede">ego lite is one browser a human and an agent share &mdash; the agent works in
+    its own Space with <strong>your real logins</strong>, your tabs stay yours. This plugin brings it
+    into dsh and adds the half ego&rsquo;s own README still lists as coming soon: a
+    <strong>store the agent writes</strong>. The second time it scrapes that dashboard, it calls a
+    tool it wrote last week instead of rediscovering the page.</p>
+
+    <div class="cmd">
+      <span class="caret">$</span>
+      <code id="install-cmd">dsh plugin --profile web add -w @dshworks/dsh-ego-browser</code>
+      <button class="copy" type="button" data-copy="install-cmd">copy</button>
+    </div>
+
+    <div class="cta">
+      <a class="btn btn-primary" href="#install">60-second start</a>
+      <a class="btn" href="https://github.com/dshworks/dsh-ego-browser">source</a>
+      <a class="btn" href="https://www.npmjs.com/package/@dshworks/dsh-ego-browser">npm</a>
+    </div>
+  </section>
+
+  <figure class="store">
+    <div class="store-bar">
+      <span class="label">ego_doctor</span>
+      <span class="chip on">dsh 0.1.1-rc.2</span>
+      <span class="chip">7 tools registered</span>
+      <span class="chip">3 sites &middot; 8 stored tools</span>
+    </div>
+<pre class="term"><span class="mut">command:</span> ego-browser   <span class="mut">invoked as:</span> ego-browser &lt;&lt;'JS'
+<span class="mut">ego runtime surface:</span> facades (console.log / page / browser / taskSpaces); 7 helper names visible.
+<span class="mut">store:</span> ~/.dsh/ego-browser/workspace (3 sites)
+  <span class="you">github</span>  <span class="mut">github.com, *.github.com</span>
+          3 tool(s): <span class="ok">search_repos</span> <span class="mut">(0x)</span>, <span class="ok">get_open_issues</span> <span class="mut">(0x)</span>, <span class="ok">get_repo_stats</span> <span class="mut">(0x)</span>
+  <span class="you">google</span>  <span class="mut">google.com, *.google.com, www.google.com</span>
+          2 tool(s): <span class="ok">search_and_extract</span> <span class="mut">(0x)</span>, <span class="ok">get_autocomplete_suggestions</span> <span class="mut">(0x)</span>
+  <span class="you">x-com</span>   <span class="mut">x.com, *.x.com, twitter.com, *.twitter.com</span>
+          3 tool(s): <span class="ok">get_timeline_posts</span> <span class="mut">(0x)</span>, <span class="ok">search_users</span> <span class="mut">(0x)</span>, <span class="ok">post_from_active_element</span> <span class="mut">(0x)</span></pre>
+    <figcaption>Three sites and eight tools before the agent has browsed anything &mdash;
+    the store inheriting what ego already ships. <code>(0x)</code> is the call count, so a
+    tool nobody uses is visible as unused rather than as furniture.</figcaption>
+  </figure>
+
+  <h2>The loop</h2>
+  <p>Four tools in the order that matters. Everything else on this page exists to
+  keep step&nbsp;3 honest.</p>
+
+  <div class="loop">
+    <div class="step">
+      <span class="n">01</span>
+      <h3><code>ego_recall</code></h3>
+      <p>Notes and tool signatures for a hostname, read off disk. No browser, no page
+      load, no tokens spent rediscovering last month.</p>
+    </div>
+    <div class="step">
+      <span class="n">02</span>
+      <h3><code>ego_run</code></h3>
+      <p>One script for the whole browser task &mdash; the design ego&rsquo;s own benchmark is
+      built on. Pass a URL and it prepends what is already known.</p>
+    </div>
+    <div class="step">
+      <span class="n">03</span>
+      <h3><code>ego_learn</code></h3>
+      <p>Promote the step that worked into a real site tool, in ego&rsquo;s format &mdash;
+      and refuse the ones that will not survive to tomorrow.</p>
+    </div>
+    <div class="step">
+      <span class="n">04</span>
+      <h3><code>ego_site_run</code></h3>
+      <p>Call a stored tool by name next session, and count the call. Instead of
+      rediscovering the page.</p>
+    </div>
+  </div>
+  <p class="fine">Anything learned here loads in the stock <code>ego-browser</code> skill
+  outside dsh, and in any other agent pointed at the same workspace. There is no private
+  format and nothing to migrate out of.</p>
+
+  <h2 id="gate">The gate that makes the memory worth keeping</h2>
+  <p>The script that just worked is <em>full</em> of <code>@21</code>s, because that is how
+  the agent found the element five seconds ago. Snapshot refs are rebuilt on every
+  <code>snapshotText()</code> call and mean nothing on the next run, so storing that script
+  verbatim stores <strong>nothing</strong>. <code>ego_learn</code> refuses it:</p>
+
+<pre class="term">this is not storable yet:
+  <span class="no">- code contains a snapshot ref (@21 / ref=21). Those are rebuilt on every</span>
+  <span class="no">  snapshotText() call and mean nothing on the next run — re-express the step</span>
+  <span class="no">  with a stable locator (a CSS selector, or the loc=... value from the</span>
+  <span class="no">  snapshot) before promoting it.</span></pre>
+
+  <p>This is the whole difference between a memory and a pile of dead selectors. The
+  rule is ego&rsquo;s own &mdash; its validator rejects the same pattern &mdash; and enforcing it
+  at <em>write</em> time is what turns &ldquo;it worked once&rdquo; into &ldquo;it works again&rdquo;.
+  A refused promotion leaves the store exactly as it was.</p>
+
+  <h2 id="install">Get started</h2>
+  <p>Needs ego lite installed and onboarded on the machine running dsh
+  (<a href="https://lite.ego.app/">lite.ego.app</a>), so <code>ego-browser</code> is on the PATH.</p>
+
+  <div class="cmd">
+    <span class="caret">$</span>
+    <code id="install-cmd-2">dsh plugin --profile web add -w @dshworks/dsh-ego-browser</code>
+    <button class="copy" type="button" data-copy="install-cmd-2">copy</button>
+  </div>
+  <div class="cmd">
+    <span class="caret">$</span>
+    <code id="verify-cmd">curl -s localhost:8090/dsh-ego-browser/memory | jq .tools</code>
+    <button class="copy" type="button" data-copy="verify-cmd">copy</button>
+  </div>
+  <p>Restart dsh between the two. Seven names come back, or <code>[]</code> if it did not
+  take. Then ask the agent to run <code>ego_doctor</code> once &mdash; it is how the model
+  finds out whether to write <code>cliLog()</code> or <code>console.log()</code> for the ego
+  you happen to have.</p>
+
+  <h2 id="tools">The seven tools</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>tool</th><th>what it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>ego_run</code></td><td>Run one script in ego&rsquo;s runtime. Pass <code>url</code> and it prepends everything already learned about that site. Pass <code>taskSpace</code> and it opens the space first, in the right dialect.</td></tr>
+      <tr><td><code>ego_recall</code></td><td>Notes and tool signatures for a URL, read off disk.</td></tr>
+      <tr><td><code>ego_site_run</code></td><td>Call a learned tool by site and name, and count the call.</td></tr>
+      <tr><td><code>ego_learn</code></td><td>Promote a working step into a real site tool &mdash; and refuse it when it will not survive.</td></tr>
+      <tr><td><code>ego_forget</code></td><td>Remove a tool or a whole site. A memory that is wrong is worse than none.</td></tr>
+      <tr><td><code>ego_handoff</code></td><td>Hand the browser over with a real <strong>Continue / Finish task</strong> prompt, and take control back on Continue.</td></tr>
+      <tr><td><code>ego_doctor</code></td><td>Which ego, which argv shape, which helper surface, which store, and what is in it.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="fine">Seven, not thirty. Granular <code>click</code>&nbsp;/&nbsp;<code>fill</code>&nbsp;/&nbsp;<code>scroll</code>
+  verbs are deliberately absent: ego&rsquo;s own benchmark attributes its speed to
+  one-script-per-task, so thirty small verbs would spend that advantage to look
+  thorough.</p>
+
+  <h2>Two runtimes, one command name</h2>
+  <p>Worth stating plainly, because it bites anyone writing against ego.
+  <strong>The argv shape is not stable.</strong> The shipped skill documents
+  <code>ego-browser nodejs</code>; the CLI in <code>citrolabs/ego-lite@main</code> takes no argv
+  at all and answers a stray <code>nodejs</code> with its usage banner and <strong>exit&nbsp;2</strong>.
+  The community Linux port swallows it as a no-op prefix. One command name, three
+  behaviours.</p>
+  <p><strong>The helper surface is not stable either.</strong> One generation installs flat
+  globals &mdash; <code>cliLog</code>, <code>snapshotText</code>, <code>useOrCreateTaskSpace</code>.
+  The other installs Playwright-shaped facades &mdash; <code>page</code>, <code>browser</code>,
+  <code>taskSpaces</code> &mdash; and drops <code>cliLog</code> for <code>console.log</code>. A script
+  written for one throws <code>ReferenceError</code> on the other, and no amount of
+  documentation fixes it because both documents are true somewhere. Even inside ego&rsquo;s
+  own repo at HEAD, <code>SKILL.md</code> and <code>references/install.md</code> disagree.</p>
+  <p>So this plugin does not assume. It <strong>asks</strong>, once per boot, and hands the
+  answer to the model.</p>
+  <p><strong>And the output sink can eat your result.</strong> When the user takes a task
+  space back, ego marks a hard stop and <em>discards every line the script logged</em>,
+  printing only its own guidance. Any integration that parses a result sentinel out of
+  stdout finds nothing there and reports a parse failure. Here the sentinel&rsquo;s
+  <em>absence</em> is the signal, and the run comes back classified as a takeover rather
+  than as a missing result.</p>
+
+  <h2 id="proof">Proof</h2>
+
+  <div class="proof">
+    <h3>On a real dsh boot</h3>
+    <p>0.1.1-rc.2, the <em>published</em> package installed from npm into a fresh profile,
+    booted.</p>
+  </div>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>claim</th><th>how it was checked</th></tr></thead>
+    <tbody>
+      <tr><td>The published package installs and loads</td><td><code>dsh plugin add -w @dshworks/dsh-ego-browser</code>, restart, and all seven tools register &mdash; <code>GET /dsh-ego-browser/memory</code> lists them; <code>[]</code> when the tools service never arrived</td></tr>
+      <tr><td>The store self-seeds</td><td>came up holding <code>github</code> (3 tools), <code>google</code> (2), <code>x-com</code> (3) from the ego skill already on the machine</td></tr>
+      <tr><td>Our validator agrees with ego&rsquo;s format</td><td><strong>zero problems</strong> against ego&rsquo;s own shipped sites &mdash; the useful direction of that check</td></tr>
+      <tr><td>The route is fenced</td><td>200 on loopback, <strong>403</strong> for a <code>Host</code> header naming anywhere else</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="proof">
+    <h3>Against the genuine built <code>ego-browser</code> bundle</h3>
+    <p>A real subprocess seam, with fixtures transcribed from ego&rsquo;s own source and the
+    upstream file named in each header &mdash; because a double weaker than production
+    tests nothing.</p>
+  </div>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>claim</th><th>how it was checked</th></tr></thead>
+    <tbody>
+      <tr><td>The argv probe finds the working shape</td><td>picks bare on the current CLI, <code>nodejs</code> on the older one, and reports both transcripts when neither runs</td></tr>
+      <tr><td>The surface probe is accurate</td><td>returns <code>facade</code> with <code>page, browser, taskSpaces, site, fetch, cdp, help</code> against the real bundle &mdash; matching its source exactly</td></tr>
+      <tr><td>Output survives a failure</td><td>a thrown error does not swallow what the script printed first; a top-level <code>return</code> still produces a verdict</td></tr>
+      <tr><td>A takeover is named as a takeover</td><td>not as a missing result</td></tr>
+      <tr><td>The promotion gate holds</td><td>snapshot refs, bad schemas, missing exports and unparseable source are all refused, writing nothing</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="counts">
+    <div class="count"><strong>74</strong><span>tests, no browser needed</span></div>
+    <div class="count"><strong>~2s</strong><span>full suite</span></div>
+    <div class="count"><strong>7</strong><span>tools, on purpose</span></div>
+    <div class="count"><strong>0</strong><span>browsers vendored</span></div>
+  </div>
+
+  <h3>What is not verified</h3>
+  <p>Every path that needs the live browser: an actual page load, a real task space, a
+  real user takeover. ego lite is a macOS app and this was built in a Linux container.
+  The wire into it is exercised end to end against the real CLI bundle; <strong>what is on
+  the far side of that wire is not.</strong> Run <code>ego_doctor</code> on a real install and
+  <a href="https://github.com/dshworks/dsh-ego-browser/issues/new/choose">open an issue</a>
+  with its output if anything here disagrees with your machine.</p>
+
+  <h2>When to skip it</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>You want to watch the agent browse</h3>
+      <p class="fine">This plugin has no viewer, and is not going to grow one.
+      <a href="https://github.com/Fisfzy/dsh-ego-browser">Fisfzy/dsh-ego-browser</a> is a live
+      screencast panel you can click through, with a vendored Linux port so it works
+      without the macOS app. It owns that surface and does it well.</p>
+    </div>
+    <div class="card">
+      <h3>You are not on macOS</h3>
+      <p class="fine">ego lite ships for macOS today. Same recommendation.</p>
+    </div>
+    <div class="card">
+      <h3>You do browser work once and never again</h3>
+      <p class="fine">The memory <em>is</em> the point. Without repetition this is overhead
+      over the plain <code>ego-browser</code> skill.</p>
+    </div>
+    <div class="card">
+      <h3>You need this in CI, headless</h3>
+      <p class="fine">ego lite is a desktop app with a real profile. A Playwright plugin
+      is the right tool.</p>
+    </div>
+  </div>
+  <p class="fine">Not affiliated with DeepSeek or Citro Labs. ego lite is its authors&rsquo;
+  product; this plugin only speaks to the command it installs, and vendors, patches and
+  launches no browser of its own.</p>
+
+</div>
+</main>
+
+<footer>
+<div class="wrap">
+  <nav>
+    <a href="https://github.com/dshworks/dsh-ego-browser">repo</a>
+    <a href="https://www.npmjs.com/package/@dshworks/dsh-ego-browser">npm</a>
+    <a href="https://github.com/dshworks/dsh-ego-browser/blob/main/CHANGELOG.md">changelog</a>
+    <a href="https://github.com/dshworks/dsh-ego-browser/blob/main/llms.txt">llms.txt</a>
+    <a href="https://dsh.works/awesome-dsh-plugins/">plugin registry</a>
+    <a href="https://github.com/deepseek-ai/deepseek-harness">dsh</a>
+  </nav>
+  <p>MIT. A community plugin from <a href="https://github.com/dshworks">dshworks</a> &mdash;
+  not affiliated with DeepSeek. It drives a browser holding your real logins, on your
+  machine; the store route answers loopback only.</p>
+</div>
+</footer>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var toggle = document.getElementById('themetoggle');
+  toggle.addEventListener('click', function () {
+    var now = root.dataset.theme
+      || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    var next = now === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    try { localStorage.setItem('theme', next); } catch (e) {}
+  });
+
+  // Copy buttons report into their own label: a toast would be a second
+  // mechanism for one word of feedback.
+  document.querySelectorAll('.copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = document.getElementById(btn.dataset.copy).textContent;
+      navigator.clipboard.writeText(text).then(function () {
+        var was = btn.textContent;
+        btn.textContent = 'copied';
+        setTimeout(function () { btn.textContent = was; }, 1200);
+      }).catch(function () {
+        btn.textContent = 'copy failed';
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
