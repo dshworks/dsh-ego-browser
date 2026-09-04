@@ -1,7 +1,7 @@
 {
   "name": "@dshworks/dsh-ego-browser",
   "description": "ego lite for DeepSeek Harness, with a memory it keeps: the agent recalls what it learned about a site before it acts, promotes a script that worked into a reusable site tool, and hands you the keyboard through a real dsh prompt when a page needs a human.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
