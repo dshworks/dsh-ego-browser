@@ -13,7 +13,7 @@
 </div>
 
 <p align="center"><strong>
-7 个工具 · 用 ego lite 自己的 <code>learnings/</code> 格式存 · 在 dsh 0.1.1-rc.2 上验证过 · 74 个测试，不需要浏览器 · 纯 host 插件 · MIT
+7 个工具 · 用 ego lite 自己的 <code>learnings/</code> 格式存 · 在 dsh 0.1.1-rc.2 上验证过 · 75 个测试，不需要浏览器 · 纯 host 插件 · MIT
 </strong></p>
 
 <p align="center">
@@ -137,7 +137,7 @@ store: ~/.dsh/ego-browser/workspace (3 sites)
 | 晋升闸拦得住 | 快照 ref、错误 schema、缺失导出、无法解析的源码全部拒收，且不写入任何字节 |
 
 ```sh
-npm install && npm test    # 74 个测试，不需要浏览器，约 2 秒
+npm install && npm test    # 75 个测试，不需要浏览器，约 2 秒
 ```
 
 `fixtures/` 里的 CLI 替身是从 ego 自己的源码逐条转写的 —— argv 处理来自 `src/run.ts`，输出 sink 来自 `src/output-sink.ts`，helper 表面来自 `src/helpers.ts` —— 每个文件头都写明了它跟的是上游哪个文件，因为比生产环境更弱的替身什么都测不出来。
