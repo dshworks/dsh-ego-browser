@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.1.2 — 2026-09-17
+
+- **Installs beside dsh 0.1.5 again.** dsh 0.1.5-rc.1 became npm `latest` on
+  2026-09-10, and npm semver never lets a prerelease satisfy a caret with a
+  different version tuple, so no range here matched it. Installed beside it,
+  npm resolved a second, 0.1.2-rc.1 copy of 16 harness packages next to the
+  host's 0.1.5 ones (issue #6).
+  The `dsh-subprocess` and `dsh-tools` peer ranges now OR in `^0.1.5-rc.1`;
+  proven by `scripts/check-dsh-release.mjs`: one version of every harness
+  package beside dsh 0.1.5-rc.2.
+- The lockfile had pinned dsh 0.1.0-rc.8 since 0.1.0; it now resolves 0.1.5-rc.2.
+- No code change was needed: the seams this plugin uses (`subprocess.spawn`,
+  `defineTool`, `userQuestions.ask`, `webServer.register`) kept their shape in
+  0.1.5. The test double was raised to 0.1.5's `SubprocessHandle` anyway — it
+  no longer offers the `pid` 0.1.5 removed, and it refuses a pre-aborted signal
+  the way the real provider does.
+
+## 0.1.1 — 2026-09-04
+
+- Peer ranges accept dsh 0.1.2-rc.1, which had become npm `latest` and matched
+  no range here.
+- `scripts/check-dsh-release.mjs` and a daily workflow that opens an issue when
+  a dsh release splits the harness tree.
+
 ## 0.1.0 — 2026-08-24
 
 First release. On npm as `@dshworks/dsh-ego-browser`, MIT.

@@ -28,6 +28,9 @@ export function makeSubprocess() {
   return {
     calls,
     spawn(spec) {
+      // dsh-subprocess-local refuses a pre-aborted signal synchronously, before
+      // a handle exists (documented as `@throws` from 0.1.5).
+      if (spec.signal?.aborted) throw new Error(`aborted before spawn: ${String(spec.signal.reason ?? 'aborted')}`)
       calls.push({ argv: [...spec.argv], env: spec.env, stdin: spec.stdio.stdin })
       const child = spawn(spec.argv[0], spec.argv.slice(1), {
         cwd: spec.cwd,
@@ -53,8 +56,9 @@ export function makeSubprocess() {
           resolve({ exitCode, signal })
         })
       })
+      // No `pid`: dsh 0.1.5 dropped it from SubprocessHandle, so a double that
+      // still offers it would keep a `handle.pid` read green in tests only.
       return {
-        pid: child.pid ?? -1,
         done,
         collected: {
           stdout: { readFrom: () => ({ text: out, nextOffset: out.length, lossy: false }) },

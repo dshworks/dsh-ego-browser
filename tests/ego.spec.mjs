@@ -124,6 +124,14 @@ describe('running a script', () => {
     const run = await ego.run('await new Promise(resolve => setTimeout(resolve, 30000))')
     expect(run.ok).toBe(false)
   })
+
+  it('lets a cancelled call fail as cancelled, not as a script that printed nothing', async () => {
+    const { ego } = makeEgo('ego-v2')
+    await ego.probeArgv()
+    const controller = new AbortController()
+    controller.abort('user stopped the turn')
+    await expect(ego.run('console.log(1)', { signal: controller.signal })).rejects.toThrow(/aborted before spawn/)
+  })
 })
 
 describe('classify', () => {

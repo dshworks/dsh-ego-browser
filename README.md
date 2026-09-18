@@ -13,7 +13,7 @@
 </div>
 
 <p align="center"><strong>
-7 tools · a store in ego lite's own <code>learnings/</code> format · verified on dsh 0.1.1-rc.2 · 74 tests, no browser needed · host-only · MIT
+7 tools · a store in ego lite's own <code>learnings/</code> format · verified on dsh 0.1.1-rc.2 · 75 tests, no browser needed · host-only · MIT
 </strong></p>
 
 <p align="center">
@@ -165,7 +165,7 @@ store inheriting what ego already shipped.*
 | The promotion gate holds | snapshot refs, bad schemas, missing exports, and unparseable source are all refused, writing nothing |
 
 ```sh
-npm install && npm test    # 74 tests, no browser needed, ~2s
+npm install && npm test    # 75 tests, no browser needed, ~2s
 ```
 
 The CLI fixtures in `fixtures/` are transcribed from ego's own source — argv
