@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.1.3 — 2026-09-29
+
+- **Installs and runs on dsh 0.1.7-rc.2 (npm `latest`) and 0.2.0-rc.1
+  (`next`).** Proven on the path users take: the packed plugin added to a fresh
+  profile with `dsh plugin add`, dsh's compatibility gate admitting it, all
+  seven tools registering, and a headless turn whose `ego_doctor`, `ego_recall`
+  and `ego_run` went through dsh's tool pipeline and subprocess seam into a real
+  ego lite 0.5.1.13 on a Mac, reached through the deva bridge. Scripts that open
+  no page only.
+- The `dsh-subprocess` and `dsh-tools` peer ranges add `^0.1.7-rc.2` and
+  `^0.2.0-rc.1`. The lower bound stays where it was: no seam this plugin uses
+  changed shape between 0.1.5 and 0.2.0-rc.1. dsh 0.2.0 refuses any plugin whose
+  `@deepseek-ai/dsh*` ranges do not cover it.
+- `@deepseek-ai/schemastery` moved from `dependencies` to `peerDependencies`.
+  As a dependency, `dsh plugin add` installed it (and cosmokit) into the
+  profile, where both shadowed the host's copies for every plugin in that
+  profile. The harness packages the tests import are pinned in
+  `devDependencies`.
+- **Issue #8 was a false alarm, and so was the check that raised it.**
+  `scripts/check-dsh-release.mjs` installed dsh and this plugin into one npm
+  tree and counted harness packages at two versions. npm installs peers there
+  and dsh does not: `dsh plugin add` runs pnpm with `autoInstallPeers: false`
+  and resolves every harness import to the host's own copy. It reported 16
+  split packages where the real path had none. The check now does what users
+  do, `dsh plugin add` into a fresh profile, and fails on a refusal by the gate
+  or on any host package shadowed in the profile. The single-version proofs
+  quoted for 0.1.1 and 0.1.2 below were made on the old model.
+- **Output that arrives on stderr is read there.** ego 0.5.1.13 reached through
+  the deva bridge returns every byte a script prints on stderr, `--version`
+  included; the plugin read stdout only, so both argv probes failed although
+  the script ran. Each run is now read from the stream that carries the marker
+  the script printed, stdout first, and the markers are assembled at run time
+  so an error trace quoting the script cannot forge one.
+- dsh strips credential-shaped variables (`/KEY|PASSWORD|SECRET|TOKEN/i`) from
+  every process it spawns, which removes the deva bridge's `DEVA_EGO_TOKEN`.
+  The README shows how to forward it through `env`. The subprocess test double
+  passed the raw environment and hid this; it now applies dsh's own scrub.
+- The front page's "verified on" version is now asserted to be the harness the
+  suite runs against. It had said 0.1.1-rc.2 through two releases.
+
 ## 0.1.2 — 2026-09-17
 
 - **Installs beside dsh 0.1.5 again.** dsh 0.1.5-rc.1 became npm `latest` on

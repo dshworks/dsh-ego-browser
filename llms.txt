@@ -5,7 +5,7 @@
 > acting, promotes a script that worked into a reusable tool in ego lite's own
 > `learnings/` format, and hands the keyboard to the user through a real dsh
 > Continue/Finish prompt when a page needs a human. 7 tools, host-only, MIT,
-> verified against dsh 0.1.1-rc.2.
+> verified against dsh 0.1.7-rc.2 (and 0.2.0-rc.1).
 
 Package: `@dshworks/dsh-ego-browser` on npm (public, MIT). Host-only dsh plugin;
 requires the ego lite app (macOS today) so that `ego-browser` is on the PATH.
@@ -71,7 +71,8 @@ workspace's `learnings/` when it finds one.
 ## Facts worth knowing about the ego wire
 
 Verified against the built `ego-browser` bundle from `citrolabs/ego-lite@main`
-on 2026-08-24.
+on 2026-08-24, and against ego lite 0.5.1.13 through the deva bridge on
+2026-09-29.
 
 - The argv shape is not stable: the shipped skill documents
   `ego-browser nodejs <<'EOF'`, while the CLI at main takes no argv and exits 2
@@ -86,6 +87,15 @@ on 2026-08-24.
   DISCARDS every line the script logged, printing only its own guidance. A
   result sentinel never arrives, so its absence is the signal; the plugin
   classifies the run as a takeover rather than a parse failure.
+- The output stream is not stable: ego's runtime flushes a script's output to
+  stdout, but ego 0.5.1.13 reached through the deva bridge returns every byte on
+  stderr, `--version` included. The plugin reads each run from the stream that
+  carries the marker the script printed, stdout first.
+- dsh strips credential-shaped variables (`/KEY|PASSWORD|SECRET|TOKEN/i`) and
+  `DSH_*` from every process it spawns. A bridge that authenticates through the
+  environment needs its variable forwarded in this plugin's `env` config, e.g.
+  `DEVA_EGO_TOKEN: !!js process.env.DEVA_EGO_TOKEN` in the profile's
+  `cordis.patch.yml`.
 - Stored tools and notes may not contain snapshot refs (`@21`, `ref=21`): they
   are rebuilt on every `snapshotText()` call. ego's own validator rejects them,
   and this plugin refuses to store them.

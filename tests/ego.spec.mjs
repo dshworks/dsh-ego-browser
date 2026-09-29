@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Ego, classify, wrapScript } from '../lib/ego.js'
+import { Ego, SENTINEL, classify, wrapScript } from '../lib/ego.js'
 import { fixture, makeConfig, makeSubprocess } from './harness.mjs'
 
 /**
@@ -132,6 +132,41 @@ describe('running a script', () => {
     controller.abort('user stopped the turn')
     await expect(ego.run('console.log(1)', { signal: controller.signal })).rejects.toThrow(/aborted before spawn/)
   })
+
+  it('keeps the harness\'s credentials away from ego unless `env` forwards one', async () => {
+    // The deva bridge shim authenticates with DEVA_EGO_TOKEN, a name the host's
+    // scrub drops; a test that let it through would hide why ego_doctor fails.
+    process.env.EGO_FIXTURE_BRIDGE_TOKEN = 'from-the-harness'
+    try {
+      const read = 'console.log(String(process.env.EGO_FIXTURE_BRIDGE_TOKEN))'
+      const { ego: scrubbed } = makeEgo('ego-v2')
+      expect((await scrubbed.run(read)).output).toBe('undefined')
+      const { ego: forwarded } = makeEgo('ego-v2', { env: { EGO_FIXTURE_BRIDGE_TOKEN: 'forwarded' } })
+      expect((await forwarded.run(read)).output).toBe('forwarded')
+    } finally {
+      delete process.env.EGO_FIXTURE_BRIDGE_TOKEN
+    }
+  })
+})
+
+describe('a runtime that answers on stderr', () => {
+  // ego 0.5.1.13 through the deva bridge: every byte arrives as stderr.
+  const oneStream = () => makeEgo('ego-v1', { env: { EGO_FIXTURE_ONE_STREAM: '1' } }).ego
+
+  it('still finds the argv shape and the helper surface', async () => {
+    const ego = oneStream()
+    expect(await ego.probeArgv()).toEqual(['nodejs'])
+    const surface = await ego.probeSurface()
+    expect(surface.generation).toBe('flat')
+    expect(surface.globals).toContain('cliLog')
+  })
+
+  it('reads a run\'s output and verdict off stderr', async () => {
+    const run = await oneStream().run('cliLog("from the page")')
+    expect(run.ok).toBe(true)
+    expect(run.sentinel).toBe(true)
+    expect(run.output).toBe('from the page')
+  })
 })
 
 describe('classify', () => {
@@ -150,6 +185,10 @@ describe('classify', () => {
 })
 
 describe('wrapScript', () => {
+  it('never contains the sentinel, so an error trace quoting the script cannot forge a verdict', () => {
+    expect(wrapScript('throw new Error("x")')).not.toContain(SENTINEL)
+  })
+
   it('reports through finally, so a top-level return cannot skip the verdict', () => {
     expect(wrapScript('return 1')).toContain('} catch (e) { __egoErr = e } finally {')
   })

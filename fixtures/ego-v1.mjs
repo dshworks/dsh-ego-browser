@@ -4,8 +4,16 @@
  * `ego-browser nodejs <<'EOF'`, flat global helpers, and `cliLog` as the only
  * output channel. Rejects a bare invocation, which is the mirror image of the
  * current CLI — the two generations are why the plugin probes.
+ *
+ * `EGO_FIXTURE_ONE_STREAM=1` sends everything the script prints to stderr, which
+ * is what ego 0.5.1.13 returns through the deva bridge: measured 2026-09-29 as
+ * `{"exit":0,"stdout":"","stderr":"raw-probe\n\n"}` for `console.log("raw-probe")`.
+ * That build is this generation otherwise — `nodejs` argv, flat globals.
  */
 import { readFileSync } from 'node:fs'
+
+const out = process.env.EGO_FIXTURE_ONE_STREAM === '1' ? process.stderr : process.stdout
+if (out === process.stderr) console.log = (...args) => process.stderr.write(`${args.join(' ')}\n`)
 
 const argv = process.argv.slice(2)
 if (argv[0] !== 'nodejs') {
@@ -14,7 +22,7 @@ if (argv[0] !== 'nodejs') {
 }
 
 const context = {
-  cliLog: (...args) => process.stdout.write(`${args.map(value => (typeof value === 'string' ? value : JSON.stringify(value))).join(' ')}\n`),
+  cliLog: (...args) => out.write(`${args.map(value => (typeof value === 'string' ? value : JSON.stringify(value))).join(' ')}\n`),
   snapshotText: async () => 'heading "Example Domain" [ref=1, loc=css:h1]',
   pageInfo: async () => ({ url: 'https://example.com/', title: 'Example' }),
   captureScreenshot: async () => ({ path: '/tmp/shot.png' }),

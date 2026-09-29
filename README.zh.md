@@ -13,7 +13,7 @@
 </div>
 
 <p align="center"><strong>
-7 个工具 · 用 ego lite 自己的 <code>learnings/</code> 格式存 · 在 dsh 0.1.1-rc.2 上验证过 · 75 个测试，不需要浏览器 · 纯 host 插件 · MIT
+7 个工具 · 用 ego lite 自己的 <code>learnings/</code> 格式存 · 在 dsh 0.1.7-rc.2 上验证过 · 79 个测试，不需要浏览器 · 纯 host 插件 · MIT
 </strong></p>
 
 <p align="center">
@@ -21,7 +21,7 @@
 <a href="https://www.npmjs.com/package/@dshworks/dsh-ego-browser"><img src="https://img.shields.io/npm/v/@dshworks/dsh-ego-browser?color=CB3837&logo=npm&logoColor=white" alt="npm"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-3DA639" alt="MIT"></a>
 <img src="https://img.shields.io/badge/node-%E2%89%A520-5FA04E" alt="Node >= 20">
-<img src="https://img.shields.io/badge/dsh-0.1.1--rc.2%20verified-1E90FF" alt="verified against dsh 0.1.1-rc.2">
+<img src="https://img.shields.io/badge/dsh-0.1.7--rc.2%20verified-1E90FF" alt="verified against dsh 0.1.7-rc.2">
 </p>
 
 <p align="center">
@@ -102,6 +102,15 @@ dsh plugin --profile web add -w @dshworks/dsh-ego-browser
 curl -s localhost:8090/dsh-ego-browser/memory | jq .tools
 ```
 
+在 [deva](https://github.com/thevibeworks/deva) 容器里经 ego bridge 跑 dsh？dsh 会从它启动的每个进程的环境里剥掉所有像凭据的变量（`KEY`、`SECRET`、`TOKEN`、`PASSWORD`），所以 bridge 的 token 得在 profile 的 `cordis.patch.yml` 里显式转发：
+
+```yaml
+- id: dsh-ego-browser
+  config:
+    env:
+      DEVA_EGO_TOKEN: !!js process.env.DEVA_EGO_TOKEN
+```
+
 `add` 会顺手把 bundle 登记进 profile 花名册。然后让 agent 先跑一次 `ego_doctor` —— 它就是这样弄清楚该给你装的这一代 ego 写 `cliLog()` 还是 `console.log()` 的：
 
 ```
@@ -117,12 +126,14 @@ store: ~/.dsh/ego-browser/workspace (3 sites)
 
 ## 凭据
 
-**在真实 dsh 上跑过**（0.1.1-rc.2，从 npm 装进 profile 后启动）：
+**在真实 dsh 上跑过**（0.1.7-rc.2，并在 0.2.0-rc.1 上再跑一遍：打包、用 `dsh plugin add` 装进全新 profile、启动）：
 
 | 声称 | 怎么验的 |
 |---|---|
-| 发布出去的包装得上、加载得了 | `dsh plugin add -w @dshworks/dsh-ego-browser`，重启后七个工具全部注册 —— `GET /dsh-ego-browser/memory` 会列出它们；tools 服务没到位时是 `[]` |
-| store 会自动继承 | 启动后带着 `github`（3 个工具）、`google`（2 个）、`x-com`（3 个），来自 `~/.claude/skills/ego-browser/learnings/` |
+| 走 dsh 自己的插件安装路径装得上 | 用 `dsh plugin add` 装入打包好的插件返回 0，即 dsh 的兼容性闸门放行；profile 里没有任何自带的 `@deepseek-ai/*` 包去遮蔽 host 的 harness。`scripts/check-dsh-release.mjs` 在每个 pull request 和每天都重跑这一遍 |
+| 七个工具全部注册 | `GET /dsh-ego-browser/memory` 会列出它们；tools 服务没到位时是 `[]` |
+| 调用经 host 真的到达 ego | 一轮 headless 对话经 dsh 的工具管线和 subprocess 接缝调用了 `ego_doctor`、`ego_recall`、`ego_run`。Mac 上的 ego lite 0.5.1.13 经 deva bridge 从 Linux 容器里被调到，答复：`nodejs` argv、扁平全局量、`ego runtime v24.18.1` |
+| store 会自动继承 | 启动后带着 `google`（2 个工具）和 `x-com`（3 个），来自 ego 自带的 `skills/ego-browser/learnings/` |
 | 我们的校验器与 ego 的格式一致 | 对 ego 自带站点报出**零问题** —— 这个方向的检查才有意义 |
 | 路由有围栏 | loopback 返回 200，`Host` 指向别处返回 **403** |
 
@@ -137,12 +148,12 @@ store: ~/.dsh/ego-browser/workspace (3 sites)
 | 晋升闸拦得住 | 快照 ref、错误 schema、缺失导出、无法解析的源码全部拒收，且不写入任何字节 |
 
 ```sh
-npm install && npm test    # 75 个测试，不需要浏览器，约 2 秒
+npm install && npm test    # 79 个测试，不需要浏览器，约 2 秒
 ```
 
 `fixtures/` 里的 CLI 替身是从 ego 自己的源码逐条转写的 —— argv 处理来自 `src/run.ts`，输出 sink 来自 `src/output-sink.ts`，helper 表面来自 `src/helpers.ts` —— 每个文件头都写明了它跟的是上游哪个文件，因为比生产环境更弱的替身什么都测不出来。
 
-**没有验证的**：所有需要真实浏览器的路径 —— 真的加载页面、真的任务空间、真的用户接管。ego lite 是 macOS 应用，而这份代码写在 Linux 容器里。通向它的那根线对着真实 CLI bundle 端到端跑过；线那头的东西没有。请先在真机上跑 `ego_doctor`，若与本页所写不符，请带上它的输出[开 issue](https://github.com/dshworks/dsh-ego-browser/issues/new/choose)。
+**没有验证的**：所有要碰页面的路径 —— 真的加载页面、真的任务空间、真的用户接管。ego lite 是 macOS 应用，而这份代码写在 Linux 容器里。通向它的那根线对着真实 CLI bundle 端到端跑过，也经 deva bridge 对着真实安装的 ego 跑过，但只跑了不打开任何页面的脚本；线那头的东西没有。请先在真机上跑 `ego_doctor`，若与本页所写不符，请带上它的输出[开 issue](https://github.com/dshworks/dsh-ego-browser/issues/new/choose)。
 
 ## 让这份记忆值钱的那道闸
 
@@ -165,6 +176,8 @@ this is not storable yet:
 **argv 形状不稳定。** 已发布的 skill 写的是 `ego-browser nodejs <<'EOF'`；`citrolabs/ego-lite@main` 里的 CLI **完全不接受 argv**，多一个 `nodejs` 就打印用法并 **exit 2**；社区 Linux 移植则把 `nodejs` 当成空前缀吞掉。一个命令名，三种行为。
 
 **helper 表面同样不稳定。** 一代装的是扁平全局量 —— `cliLog`、`snapshotText`、`useOrCreateTaskSpace`；另一代装的是 Playwright 风格的 facade —— `page`、`browser`、`taskSpaces`、`site`，并且用 `console.log` 取代了 `cliLog`。为其中一代写的脚本在另一代上直接 `ReferenceError`，而且靠文档解决不了：两份文档在各自的世界里都是对的。哪怕在 ego 自己仓库的 HEAD 上，`SKILL.md` 和 `references/install.md` 也互相矛盾。
+
+**输出走哪条流也不稳定。** ego 的运行时把脚本输出刷到 stdout；经 deva bridge 调到的 ego 0.5.1.13 却把每个字节都放在 stderr，连 `--version` 也是。插件从带着脚本所打印标记的那条流读取每次运行，stdout 优先。
 
 所以这个插件不假设，它**问** —— 每次启动问一次，然后把答案交给模型。
 

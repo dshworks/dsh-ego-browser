@@ -13,7 +13,7 @@
 </div>
 
 <p align="center"><strong>
-7 tools · a store in ego lite's own <code>learnings/</code> format · verified on dsh 0.1.1-rc.2 · 75 tests, no browser needed · host-only · MIT
+7 tools · a store in ego lite's own <code>learnings/</code> format · verified on dsh 0.1.7-rc.2 · 79 tests, no browser needed · host-only · MIT
 </strong></p>
 
 <p align="center">
@@ -21,7 +21,7 @@
 <a href="https://www.npmjs.com/package/@dshworks/dsh-ego-browser"><img src="https://img.shields.io/npm/v/@dshworks/dsh-ego-browser?color=CB3837&logo=npm&logoColor=white" alt="npm"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-3DA639" alt="MIT"></a>
 <img src="https://img.shields.io/badge/node-%E2%89%A520-5FA04E" alt="Node >= 20">
-<img src="https://img.shields.io/badge/dsh-0.1.1--rc.2%20verified-1E90FF" alt="verified against dsh 0.1.1-rc.2">
+<img src="https://img.shields.io/badge/dsh-0.1.7--rc.2%20verified-1E90FF" alt="verified against dsh 0.1.7-rc.2">
 </p>
 
 <p align="center">
@@ -127,6 +127,18 @@ dsh plugin --profile web add -w @dshworks/dsh-ego-browser
 curl -s localhost:8090/dsh-ego-browser/memory | jq .tools
 ```
 
+Running dsh inside a [deva](https://github.com/thevibeworks/deva) container with
+the ego bridge? dsh strips every credential-shaped variable (`KEY`, `SECRET`,
+`TOKEN`, `PASSWORD`) from the processes it spawns, so the bridge token has to be
+forwarded on purpose, in the profile's `cordis.patch.yml`:
+
+```yaml
+- id: dsh-ego-browser
+  config:
+    env:
+      DEVA_EGO_TOKEN: !!js process.env.DEVA_EGO_TOKEN
+```
+
 `add` registers the bundle in the profile roster for you. Then ask the agent to
 run `ego_doctor` once — it is how it finds out whether to write `cliLog()` or
 `console.log()` for the ego you installed:
@@ -145,12 +157,14 @@ store inheriting what ego already shipped.*
 
 ## Proof
 
-**On a real dsh boot** (0.1.1-rc.2, installed from npm into a profile, booted):
+**On a real dsh boot** (0.1.7-rc.2, and again on 0.2.0-rc.1: packed, added to a fresh profile with `dsh plugin add`, booted):
 
 | Claim | How it was checked |
 |---|---|
-| The published package installs and loads | `dsh plugin add -w @dshworks/dsh-ego-browser`, restart, and all seven tools register — `GET /dsh-ego-browser/memory` lists them; `[]` when the tools service never arrived |
-| The store self-seeds | came up holding `github` (3 tools), `google` (2), `x-com` (3) from `~/.claude/skills/ego-browser/learnings/` |
+| It installs through dsh's own plugin path | adding the packed package with `dsh plugin add` exits 0, so dsh's compatibility gate admits it, and the profile holds no `@deepseek-ai/*` package of its own to shadow the host's harness. `scripts/check-dsh-release.mjs` repeats this on every pull request and daily |
+| All seven tools register | `GET /dsh-ego-browser/memory` lists them; `[]` when the tools service never arrived |
+| A call goes through the host into a real ego | a headless turn called `ego_doctor`, `ego_recall` and `ego_run` through dsh's tool pipeline and its subprocess seam. ego lite 0.5.1.13 on a Mac, reached from a Linux container through the deva bridge, answered: `nodejs` argv, flat globals, `ego runtime v24.18.1` |
+| The store self-seeds | came up holding `google` (2 tools) and `x-com` (3) from ego's own shipped `skills/ego-browser/learnings/` |
 | Our validator agrees with ego's format | **zero problems** reported against ego's own shipped sites — the useful direction of that check |
 | The route is fenced | 200 on loopback, **403** for a `Host` header naming anywhere else |
 
@@ -165,7 +179,7 @@ store inheriting what ego already shipped.*
 | The promotion gate holds | snapshot refs, bad schemas, missing exports, and unparseable source are all refused, writing nothing |
 
 ```sh
-npm install && npm test    # 75 tests, no browser needed, ~2s
+npm install && npm test    # 79 tests, no browser needed, ~2s
 ```
 
 The CLI fixtures in `fixtures/` are transcribed from ego's own source — argv
@@ -173,10 +187,11 @@ handling from `src/run.ts`, the output sink from `src/output-sink.ts`, the
 helper surface from `src/helpers.ts` — with the upstream file named in each
 header, because a double weaker than production tests nothing.
 
-**Not verified.** Every path that needs the live browser: an actual page load, a
-real task space, a real user takeover. ego lite is a macOS app and this was
-built in a Linux container. The wire into it is exercised end to end against the
-real CLI bundle; what is on the far side of that wire is not. Run `ego_doctor`
+**Not verified.** Every path that touches a page: an actual page load, a real
+task space, a real user takeover. ego lite is a macOS app and this was built in a
+Linux container. The wire into it is exercised end to end against the real CLI
+bundle, and against a real ego install through the deva bridge, but only with
+scripts that open no page; what is on the far side of that is not. Run `ego_doctor`
 on a real install and [open an issue](https://github.com/dshworks/dsh-ego-browser/issues/new/choose)
 with its output if anything below the wire disagrees with this page.
 
@@ -215,6 +230,11 @@ Playwright-shaped facades — `page`, `browser`, `taskSpaces`, `site` — and dr
 the other, and no amount of documentation fixes it because both documents are
 true somewhere. Even inside ego's own repo at HEAD, `SKILL.md` and
 `references/install.md` disagree.
+
+**Neither is the output stream.** ego's runtime flushes a script's output to
+stdout. ego 0.5.1.13 reached through the deva bridge returns every byte on
+stderr instead, `--version` included. The plugin reads each run from whichever
+stream carries the marker the script printed, stdout first.
 
 So this plugin does not assume. It **asks**, once per boot, and hands the answer
 to the model.
