@@ -135,11 +135,23 @@ describe('the install command', () => {
 })
 
 describe('the dsh version on the front page', () => {
-  it('is the same version in the badge, the value line, and the proof table', () => {
-    const claimed = [...README.matchAll(/0\.1\.1-{1,2}rc\.2/g)].length
-    expect(claimed, 'the verified-against version should appear in badge, value line and proof').toBeGreaterThanOrEqual(3)
-    expect(README_ZH).toContain('0.1.1-rc.2')
-    expect(LLMS).toContain('0.1.1-rc.2')
+  // The version the page says it was verified on must be the harness the suite
+  // runs against. It used to be a literal here, and it stayed green through two
+  // releases that moved the package off that line.
+  it('is the harness the tests run against, on every surface that states it', () => {
+    const version = JSON.parse(read('package.json')).devDependencies['@deepseek-ai/dsh-tools']
+    const badge = `dsh-${version.replaceAll('-', '--')}%20verified`
+    const stated = [
+      ...[...README.matchAll(/verified on dsh (\S+) ·/g)].map(match => match[1]),
+      ...[...README.matchAll(/\*\*On a real dsh boot\*\* \(([^,]+),/g)].map(match => match[1]),
+      ...[...README_ZH.matchAll(/在 dsh (\S+) 上验证过/g)].map(match => match[1]),
+      ...[...README_ZH.matchAll(/\*\*在真实 dsh 上跑过\*\*（([^，]+)，/g)].map(match => match[1]),
+      ...[...LLMS.matchAll(/verified against dsh (\d[\w.-]*\w)/g)].map(match => match[1]),
+    ]
+    expect(stated.length, 'value line, proof table and llms.txt should all state it').toBe(5)
+    expect(stated.filter(value => value !== version)).toEqual([])
+    expect(README).toContain(badge)
+    expect(README_ZH).toContain(badge)
   })
 })
 

@@ -11,6 +11,7 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { scrubbedParentEnv } from '@deepseek-ai/dsh-subprocess'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 
@@ -34,7 +35,11 @@ export function makeSubprocess() {
       calls.push({ argv: [...spec.argv], env: spec.env, stdin: spec.stdio.stdin })
       const child = spawn(spec.argv[0], spec.argv.slice(1), {
         cwd: spec.cwd,
-        env: { ...process.env, ...spec.env },
+        // The real provider starts from the harness's own scrubbed environment:
+        // any name matching /KEY|PASSWORD|SECRET|TOKEN/i, and every DSH_* fact,
+        // is dropped unless `spec.env` names it. The raw `process.env` this used
+        // to pass let a bridge token (DEVA_EGO_TOKEN) reach ego in tests only.
+        env: { ...scrubbedParentEnv(), ...spec.env },
         stdio: ['pipe', 'pipe', 'pipe'],
       })
       let out = ''
@@ -58,7 +63,13 @@ export function makeSubprocess() {
       })
       // No `pid`: dsh 0.1.5 dropped it from SubprocessHandle, so a double that
       // still offers it would keep a `handle.pid` read green in tests only.
+      // The raw streams (and 0.1.7's `control` channel) exist only when spawned
+      // as 'pipe'; this plugin collects, so the real handle carries undefined.
       return {
+        stdin: undefined,
+        stdout: undefined,
+        stderr: undefined,
+        control: undefined,
         done,
         collected: {
           stdout: { readFrom: () => ({ text: out, nextOffset: out.length, lossy: false }) },
