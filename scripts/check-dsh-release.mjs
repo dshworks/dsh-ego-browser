@@ -35,20 +35,43 @@
 // npm is not a fix. Both must pass against dsh `latest` (or DSH_VERSION). A dsh
 // on the `next` tag, ahead of `latest`, is checked too but only reported.
 //
-// Needs pnpm on PATH, as `dsh plugin` itself does. Exit 0 clean, 1 drift,
-// 2 could not check.
+// Needs pnpm on PATH, as `dsh plugin` itself does. Every run installs a whole
+// dsh into temp dirs (517 MB for one `--tree-only` run, measured 2026-09-29),
+// removed on exit whatever the outcome; `--keep` leaves them and prints where.
+// Exit 0 clean, 1 drift, 2 could not check.
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const PR_ONLY = process.argv.includes('--tree-only')
+const KEEP = process.argv.includes('--keep')
 const ROOT = new URL('..', import.meta.url).pathname
 const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
 const PROFILE = 'web'
 const report = []
 let failed = false
+
+// Every temp dir this run makes. They go in the `exit` handler rather than a
+// `finally`: `giveUp` and the last line leave through `process.exit`, which
+// skips `finally` blocks but always runs `exit` listeners. Leaving them behind
+// once filled a disk: each run is a full dsh install.
+const scratch = []
+process.on('exit', () => {
+  if (KEEP) {
+    if (scratch.length > 0) console.error(`kept for debugging:\n${scratch.map(dir => `  ${dir}`).join('\n')}`)
+    return
+  }
+  for (const dir of scratch) rmSync(dir, { recursive: true, force: true })
+})
+
+/** A fresh temp dir, removed when the process exits unless `--keep`. */
+function scratchDir(prefix) {
+  const dir = mkdtempSync(join(tmpdir(), prefix))
+  scratch.push(dir)
+  return dir
+}
 
 const run = (cmd, args, options = {}) =>
   execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], ...options })
@@ -94,7 +117,7 @@ function harnessPackages(nodeModules) {
  * @throws {Error} when npm cannot install it.
  */
 function installHost(version) {
-  const dir = mkdtempSync(join(tmpdir(), 'dsh-host-'))
+  const dir = scratchDir('dsh-host-')
   try {
     run('npm', ['init', '-y'], { cwd: dir })
     run('npm', ['install', '--no-audit', '--no-fund', `@deepseek-ai/dsh@${version}`], { cwd: dir })
@@ -114,7 +137,7 @@ function installHost(version) {
  * @param {boolean} [advisory] - report without failing.
  */
 function check(host, spec, label, advisory = false) {
-  const home = mkdtempSync(join(tmpdir(), 'dsh-home-'))
+  const home = scratchDir('dsh-home-')
   const profile = join(home, 'profiles', PROFILE)
   try {
     run(host.bin, ['plugin', '--profile', PROFILE, 'add', '-w', spec], { cwd: home, env: { ...process.env, DSH_HOME: home } })
@@ -164,7 +187,7 @@ report.push(`dsh ${process.env.DSH_VERSION ? 'DSH_VERSION' : '`latest` on npm'}:
 // point it, and a stray .tgz beside package.json is one `git add -A` away from
 // being committed — which is how these sweeps stage everything.
 let tarball
-const packDir = mkdtempSync(join(tmpdir(), 'dsh-release-pack-'))
+const packDir = scratchDir('dsh-release-pack-')
 try {
   tarball = join(packDir, run('npm', ['pack', '--silent', '--ignore-scripts', '--pack-destination', packDir], { cwd: ROOT }).trim().split('\n').pop())
 } catch (error) {
