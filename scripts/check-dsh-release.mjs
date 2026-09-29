@@ -207,7 +207,20 @@ const treeFailed = failed
 // definition still the old one on the very PR that fixes it, and a check that
 // is red on its own fix is a check people switch off.
 if (!PR_ONLY) {
-  check(host, `${pkg.name}@latest`, `published ${pkg.name}@latest into a dsh ${target} profile`)
+  // The exact version npm tags `latest`, not `@latest`. pnpm 11 resolves no
+  // version younger than `minimumReleaseAge`, 1440 minutes by default, so
+  // `@latest` through `dsh plugin add` means the newest release at least a day
+  // old: for a day after every publish it would test the release before, and
+  // the daily run would open an issue about a fix that already shipped. An
+  // exact version installs at once. (Users adding `@latest` do get that day's
+  // delay; that is pnpm's supply-chain policy, not this plugin's compatibility.)
+  let published
+  try {
+    published = run('npm', ['view', pkg.name, 'dist-tags.latest'], { cwd: ROOT }).trim()
+  } catch (error) {
+    giveUp(`could not read ${pkg.name}'s dist-tags: ${error.message}`)
+  }
+  check(host, `${pkg.name}@${published}`, `published ${pkg.name}@${published} (npm \`latest\`) into a dsh ${target} profile`)
 
   // Ahead of the tag, reported only: nobody installs `next` by default, and a
   // red check nobody can clear gets switched off. It buys the warning early.
