@@ -13,7 +13,7 @@
 </div>
 
 <p align="center"><strong>
-7 tools · a store in ego lite's own <code>learnings/</code> format · verified on dsh 0.1.7-rc.2 · 79 tests, no browser needed · host-only · MIT
+7 tools · a store in ego lite's own <code>learnings/</code> format · verified on dsh 0.1.7-rc.2 · 81 tests, no browser needed · host-only · MIT
 </strong></p>
 
 <p align="center">
@@ -179,7 +179,7 @@ store inheriting what ego already shipped.*
 | The promotion gate holds | snapshot refs, bad schemas, missing exports, and unparseable source are all refused, writing nothing |
 
 ```sh
-npm install && npm test    # 79 tests, no browser needed, ~2s
+npm install && npm test    # 81 tests, no browser needed, ~2s
 ```
 
 The CLI fixtures in `fixtures/` are transcribed from ego's own source — argv
@@ -326,7 +326,7 @@ Every field is optional.
 | field | default | what it is |
 |---|---|---|
 | `bin` | `ego-browser` | The command. An absolute path when it is not on the PATH. |
-| `workspace` | `~/.dsh/ego-browser/workspace` | Where learned sites live. Point it at an existing ego skill directory to share that store instead of keeping a copy. |
+| `workspace` | `$DSH_HOME/ego-browser/workspace` (`~/.dsh` when `DSH_HOME` is unset) | Where learned sites live. Point it at an existing ego skill directory to share that store instead of keeping a copy. |
 | `seed` | `true` | Inherit an existing ego workspace's `learnings/` on first boot. |
 | `cwd` | harness cwd | Working directory for the `ego-browser` process. |
 | `extraArgs` / `env` | `[]` / `{}` | Appended to every invocation. |

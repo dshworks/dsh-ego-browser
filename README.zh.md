@@ -13,7 +13,7 @@
 </div>
 
 <p align="center"><strong>
-7 个工具 · 用 ego lite 自己的 <code>learnings/</code> 格式存 · 在 dsh 0.1.7-rc.2 上验证过 · 79 个测试，不需要浏览器 · 纯 host 插件 · MIT
+7 个工具 · 用 ego lite 自己的 <code>learnings/</code> 格式存 · 在 dsh 0.1.7-rc.2 上验证过 · 81 个测试，不需要浏览器 · 纯 host 插件 · MIT
 </strong></p>
 
 <p align="center">
@@ -148,7 +148,7 @@ store: ~/.dsh/ego-browser/workspace (3 sites)
 | 晋升闸拦得住 | 快照 ref、错误 schema、缺失导出、无法解析的源码全部拒收，且不写入任何字节 |
 
 ```sh
-npm install && npm test    # 79 个测试，不需要浏览器，约 2 秒
+npm install && npm test    # 81 个测试，不需要浏览器，约 2 秒
 ```
 
 `fixtures/` 里的 CLI 替身是从 ego 自己的源码逐条转写的 —— argv 处理来自 `src/run.ts`，输出 sink 来自 `src/output-sink.ts`，helper 表面来自 `src/helpers.ts` —— 每个文件头都写明了它跟的是上游哪个文件，因为比生产环境更弱的替身什么都测不出来。
@@ -244,7 +244,7 @@ curl -s localhost:8090/dsh-ego-browser/memory | jq
 | 字段 | 默认 | 含义 |
 |---|---|---|
 | `bin` | `ego-browser` | 命令。不在 PATH 上时填绝对路径。 |
-| `workspace` | `~/.dsh/ego-browser/workspace` | 学到的站点存放处。指向已有的 ego skill 目录即可共用同一份 store。 |
+| `workspace` | `$DSH_HOME/ego-browser/workspace`(未设 `DSH_HOME` 时为 `~/.dsh`) | 学到的站点存放处。指向已有的 ego skill 目录即可共用同一份 store。 |
 | `seed` | `true` | 首次启动时继承已有 ego workspace 的 `learnings/`。 |
 | `cwd` | harness cwd | `ego-browser` 进程的工作目录。 |
 | `extraArgs` / `env` | `[]` / `{}` | 追加到每次调用。 |

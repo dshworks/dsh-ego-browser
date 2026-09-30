@@ -63,7 +63,7 @@ loads cleanly and simply has no route.
 `<workspace>/learnings/<site-id>/` with `manifest.json`, `notes/*.md`,
 `tools/*.js` (node tool, `export async function f(ctx, args)`), and
 `browser-tools/*.js` (evaluated in the page). Default workspace
-`~/.dsh/ego-browser/workspace`. This is ego lite's own format, so the store also
+`$DSH_HOME/ego-browser/workspace` (`~/.dsh` when unset). This is ego lite's own format, so the store also
 loads in the stock ego-browser skill outside dsh — there is nothing to migrate
 out of. On first boot the store seeds itself once from an existing ego skill
 workspace's `learnings/` when it finds one.
