@@ -2,7 +2,8 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { Memory, domainMatches, exportsCallable, hostnameOf, isValidDomain, validateLearnSpec } from '../lib/memory.js'
+import { homedir } from 'node:os'
+import { Memory, defaultWorkspace, domainMatches, dshHome, exportsCallable, hostnameOf, isValidDomain, seedCandidates, validateLearnSpec } from '../lib/memory.js'
 import { withTempDir } from './harness.mjs'
 
 /** A promotion request that passes every gate. */
@@ -20,6 +21,30 @@ function goodSpec(overrides = {}) {
     ...overrides,
   }
 }
+
+describe('the harness home', () => {
+  // dsh resolves its home as a non-blank $DSH_HOME, else ~/.dsh. A profile
+  // booted under another DSH_HOME used to read and write ~/.dsh's store.
+  it('follows DSH_HOME the way dsh does', () => {
+    expect(dshHome({ DSH_HOME: '/srv/dsh' })).toBe('/srv/dsh')
+    expect(dshHome({ DSH_HOME: '~/alt' })).toBe(join(homedir(), 'alt'))
+    expect(dshHome({})).toBe(join(homedir(), '.dsh'))
+    expect(dshHome({ DSH_HOME: '  ' })).toBe(join(homedir(), '.dsh'))
+  })
+
+  it('puts the default store and the dsh seed under that home', () => {
+    const saved = process.env.DSH_HOME
+    process.env.DSH_HOME = '/srv/dsh'
+    try {
+      expect(defaultWorkspace()).toBe('/srv/dsh/ego-browser/workspace')
+      expect(seedCandidates()).toContain('/srv/dsh/skills/ego-browser')
+      expect(seedCandidates()).not.toContain(join(homedir(), '.dsh', 'skills', 'ego-browser'))
+    } finally {
+      if (saved === undefined) delete process.env.DSH_HOME
+      else process.env.DSH_HOME = saved
+    }
+  })
+})
 
 describe('domain matching', () => {
   it('reads a hostname out of a URL or a bare domain', () => {

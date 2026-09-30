@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.4 — 2026-09-30
+
+- **Follows `DSH_HOME`.** The default store was hardcoded to
+  `~/.dsh/ego-browser/workspace`, so a profile booted under another
+  `DSH_HOME` (a scratch home, a second install) read and wrote the default
+  home's learned sites. It now resolves the home by dsh's own rule
+  (`resolveDshHome` in `@deepseek-ai/dsh-home-paths`): a non-blank
+  `$DSH_HOME`, else `~/.dsh`. The first-run seed from dsh's skills directory
+  moves with it. A configured `workspace` is unchanged.
+- Checked on dsh 0.2.0-rc.2 (npm `latest` since 2026-09-29): the published
+  0.1.3 installs through dsh's gate, all seven tools register, and a live
+  `ego_doctor` reaches ego through the bridge.
+
 ## 0.1.3 — 2026-09-29
 
 - **Installs and runs on dsh 0.1.7-rc.2 (npm `latest`) and 0.2.0-rc.1
